@@ -47,8 +47,15 @@ const events = [
   },
 ]
 
-export default function EventDetailsPage({ params }: { params: { id: string } }) {
-  const event = events.find((e) => e.id === params.id) || events[0]
+export default async function EventDetailsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  // Await the dynamic route params before using them
+  const { id } = await params
+
+  const event = events.find((e) => e.id === id) || events[0]
 
   return (
     <div className="container py-12 md:py-16">

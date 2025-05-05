@@ -80,8 +80,13 @@ const relatedEventData = {
   image: "/images/bloom-sign.png",
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = blogPosts.find((p) => p.id === params.slug) || blogPosts[0]
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
+  const post = blogPosts.find((p) => p.id === slug) || blogPosts[0]
 
   return (
     <div className="container py-12 md:py-16">
