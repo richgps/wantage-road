@@ -1,30 +1,45 @@
-# Wantage road
+# Wantage Road
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+A modern web application built with Next.js and TypeScript, styled with Tailwind CSS and Shadcn UI, and deployed via Vercel.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/richardganpatsingh-intelligenths-projects/v0-wantage-road)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/44uNo9AgSme)
+---
 
 ## Overview
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+This repository contains the source code for the Wantage Road community we
+
+- **Framework:** Next.js (TypeScript)
+- **Styling:** Tailwind CSS, Shadcn UI
+- **Deployment:** Vercel (via GitHub integration)
+- **Features:** Modular component structure, custom hooks, Radix UI, Shadcn UI components, Framer Motion, and more.
+
+---
 
 ## Deployment
 
-Your project is live at:
+Every commit to the `main` branch triggers an automatic deployment on Vercel via GitHub Actions or Vercel's Git integration.
 
-**[https://vercel.com/richardganpatsingh-intelligenths-projects/v0-wantage-road](https://vercel.com/richardganpatsingh-intelligenths-projects/v0-wantage-road)**
+The app is live at:
 
-## Build your app
+**[View Deployment on Vercel](https://v0-wantage-road-theta.vercel.app)**
 
-Continue building your app on:
+---
 
-**[https://v0.dev/chat/projects/44uNo9AgSme](https://v0.dev/chat/projects/44uNo9AgSme)**
+## Local Development
 
-## How It Works
+1. **Install dependencies:**
+   ```bash
+   pnpm install
+   # or
+   npm install
+   ```
+2. **Run the development server:**
+   ```bash
+   pnpm dev
+   # or
+   npm run dev
+   ```
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+
+

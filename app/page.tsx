@@ -30,8 +30,8 @@ export default function Home() {
             <Image
               src="/images/wantage-logo.png"
               alt="Wantage Road Logo"
-              width={200}
-              height={200}
+              width={220}
+              height={220}
               className="mx-auto mb-8 drop-shadow-lg animate-pulse-slow"
             />
             <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl drop-shadow-sm">
