@@ -70,7 +70,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 {post.categories?.map((cat: any) => (
                   <Link
                     key={cat._id}
-                    href={`/blog/category/${cat.slug?.current}`}
+                    href={`/blog/tag/${cat.slug?.current}`}
                     className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20"
                   >
                     {cat.title}
@@ -172,7 +172,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 {post.categories?.map((cat: any) => (
                   <Link
                     key={cat._id}
-                    href={`/blog/category/${cat.slug?.current}`}
+                    href={`/blog/tag/${cat.slug?.current}`}
                     className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary hover:bg-primary/20"
                   >
                     {cat.title}
