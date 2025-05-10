@@ -1,12 +1,31 @@
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
-import { CalendarDays, Camera, Mail, MapPin, Clock } from "lucide-react"
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
+import { CalendarDays, Camera, Mail, MapPin, Clock } from "lucide-react";
 import { TextShimmer } from '@/components/ui/text-shimmer';
-import "./hero-pattern.css"
+import styles from "@/app/hero-pattern.module.css";
+import { sanityFetch } from "@/sanity/lib/live";
+import { POSTS_QUERY } from "@/sanity/lib/queries";
+import { urlFor } from '@/sanity/lib/image';
+import { BlogPortableText } from '@/components/portable-text';
 
-export default function Home() {
+function formatDate(dateStr: string) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+export default async function Home() {
+  const { data: posts } = await sanityFetch({ query: POSTS_QUERY });
+  // Precompute formattedDate for each post to ensure deterministic output
+  const postsWithDate = posts.map((post: any) => ({
+    ...post,
+    formattedDate: formatDate(post.publishedAt),
+  }));
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -110,84 +129,47 @@ export default function Home() {
           </div>
 
           <div className="grid gap-8 md:grid-cols-3">
-            <Card className="overflow-hidden">
+          {postsWithDate.map((post: any) => (
+            <Card className="overflow-hidden" key={post._id}>
               <CardHeader className="p-0">
                 <div className="relative h-48">
-                  <Image src="/images/bloom-sign.png" alt="Wantage Road in Bloom" fill className="object-cover" />
+                  {post.mainImage ? (
+                    <Image
+                      src={urlFor(post.mainImage).width(600).height(300).url()}
+                      alt={post.title}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src="/images/bloom-sign.png"
+                      alt={post.title}
+                      fill
+                      className="object-cover"
+                    />
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
                   <CalendarDays className="h-4 w-4" />
-                  <span>April 15, 2025</span>
+                  <span>{post.formattedDate}</span>
                 </div>
-                <h3 className="mb-2 text-xl font-bold">Wantage Road in Bloom: Join our gardening initiative</h3>
-                <p className="mb-4 text-muted-foreground line-clamp-3">
-                  Throughout spring and summer, we encourage all residents to participate in the Wantage Road in Bloom
-                  initiative. Plant flowers, maintain your garden, and help make our street a more beautiful place to
-                  live.
-                </p>
+                <h3 className="mb-2 text-xl font-bold">{post?.title}</h3>
+                <div className="mb-4 text-muted-foreground line-clamp-3 flex-grow">
+                  {post.body && post.body.length > 0 ? (
+                    <BlogPortableText value={[post.body[0]]} />
+                  ) : null}
+                </div>
               </CardContent>
               <CardFooter className="px-6 pb-6 pt-0">
                 <Button asChild variant="outline" className="w-full hover:bg-[rgb(235,235,235)] dark:hover:bg-gray-800">
-                  <Link href="/blog/wantage-road-in-bloom">Read more</Link>
+                  <Link href={post.slug?.current ? `/blog/${post.slug.current}` : '#'}>Read more</Link>
                 </Button>
               </CardFooter>
             </Card>
-
-            <Card className="overflow-hidden">
-              <CardHeader className="p-0">
-                <div className="relative h-48">
-                  <Image src="/images/street-party-2.png" alt="Community Updates" fill className="object-cover" />
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
-                  <CalendarDays className="h-4 w-4" />
-                  <span>April 10, 2025</span>
-                </div>
-                <h3 className="mb-2 text-xl font-bold">Community updates: What's happening this month</h3>
-                <p className="mb-4 text-muted-foreground line-clamp-3">
-                  Stay informed about all the exciting events and initiatives happening in our community this month.
-                  From local meetups to volunteer opportunities, there's something for everyone.
-                </p>
-              </CardContent>
-              <CardFooter className="px-6 pb-6 pt-0">
-                <Button asChild variant="outline" className="w-full hover:bg-[rgb(235,235,235)] dark:hover:bg-gray-800">
-                  <Link href="/blog">Read more</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card className="overflow-hidden">
-              <CardHeader className="p-0">
-                <div className="relative h-48">
-                  <Image
-                    src="/images/street-party-3.png"
-                    alt="Street Party Preparations"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
-                  <CalendarDays className="h-4 w-4" />
-                  <span>April 5, 2025</span>
-                </div>
-                <h3 className="mb-2 text-xl font-bold">Street party preparations: How you can help</h3>
-                <p className="mb-4 text-muted-foreground line-clamp-3">
-                  Our annual street party is approaching! Learn how you can contribute to making this year's celebration
-                  the best one yet. From volunteering to donations, every bit helps.
-                </p>
-              </CardContent>
-              <CardFooter className="px-6 pb-6 pt-0">
-                <Button asChild variant="outline" className="w-full hover:bg-[rgb(235,235,235)] dark:hover:bg-gray-800">
-                  <Link href="/blog">Read more</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
+          ))}
+        </div>
 
           <div className="mt-8 text-center">
             <Button asChild variant="outline" className="hover:bg-[rgb(235,235,235)] dark:hover:bg-gray-800">

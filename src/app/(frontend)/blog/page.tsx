@@ -1,10 +1,34 @@
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { CalendarDays, ArrowRight } from "lucide-react"
-import { CustomLink } from "@/components/ui/link"
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { CalendarDays, ArrowRight } from "lucide-react";
+import { CustomLink } from "@/components/ui/link";
+import { client } from '@/sanity/lib/client';
+import { urlFor } from '@/sanity/lib/image';
+import { BlogPortableText } from '@/components/portable-text';
+import type { SanityDocument } from 'next-sanity';
 
-// This would typically come from a database or CMS
+interface BlogPost extends SanityDocument {
+  title: string;
+  slug: { current: string };
+  publishedAt: string;
+  mainImage?: any;
+  body?: any;
+}
+
+async function getPosts(): Promise<BlogPost[]> {
+  return client.fetch(
+    `*[_type == "post" && defined(slug.current)]|order(publishedAt desc){
+      _id,
+      title,
+      slug,
+      publishedAt,
+      mainImage,
+      body
+    }`
+  );
+}
+
 const blogPosts = [
   {
     id: "wantage-road-in-bloom",
@@ -94,7 +118,17 @@ const blogPosts = [
   },
 ]
 
-export default function BlogPage() {
+function formatDate(dateStr: string) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+export default async function BlogPage() {
+  const blogPosts = await getPosts();
   return (
     <div className="container py-12 md:py-16">
       <div className="mb-10 text-center">
@@ -106,11 +140,11 @@ export default function BlogPage() {
 
       {/* Featured Post */}
       <div className="mb-12 overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
-        <CustomLink href={`/blog/${blogPosts[0].id}`} className="block">
+        <CustomLink href={`/blog/${blogPosts[0].slug.current}`} className="block">
           <div className="grid md:grid-cols-2">
             <div className="relative min-h-[300px]">
               <Image
-                src={blogPosts[0].image || "/placeholder.svg"}
+                src={blogPosts[0].mainImage ? urlFor(blogPosts[0].mainImage).width(800).height(450).url() : "/placeholder.svg"}
                 alt={blogPosts[0].title}
                 fill
                 className="object-cover"
@@ -119,12 +153,16 @@ export default function BlogPage() {
             <div className="flex flex-col justify-center p-6 md:p-8">
               <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
                 <CalendarDays className="h-4 w-4" />
-                <span>{blogPosts[0].date}</span>
+                <span>{formatDate(blogPosts[0].publishedAt)}</span>
               </div>
               <h2 className="mb-2 text-2xl font-bold group-hover:text-primary transition-colors">
                 {blogPosts[0].title}
               </h2>
-              <p className="mb-6 text-muted-foreground">{blogPosts[0].excerpt}</p>
+              <div className="mb-6 text-muted-foreground line-clamp-3">
+  {blogPosts[0].body && blogPosts[0].body.length > 0 ? (
+    <BlogPortableText value={[blogPosts[0].body[0]]} />
+  ) : null}
+</div>
               <Button asChild className="hover:bg-primary/90 w-fit">
                 <span className="flex items-center gap-2">
                   Read more
@@ -140,23 +178,27 @@ export default function BlogPage() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {blogPosts.slice(1).map((post) => (
           <CustomLink
-            key={post.id}
-            href={`/blog/${post.id}`}
+            key={post._id}
+            href={`/blog/${post.slug.current}`}
             className="block h-full transition-all duration-300 hover:scale-[1.03]"
           >
             <Card className="overflow-hidden h-full hover:shadow-lg transition-all duration-300 hover:border-primary/30">
               <CardHeader className="p-0">
                 <div className="relative h-48">
-                  <Image src={post.image || "/placeholder.svg"} alt={post.title} fill className="object-cover" />
+                  <Image src={post.mainImage ? urlFor(post.mainImage).width(800).height(450).url() : "/placeholder.svg"} alt={post.title} fill className="object-cover" />
                 </div>
               </CardHeader>
               <CardContent className="p-6 flex flex-col flex-grow">
                 <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
                   <CalendarDays className="h-4 w-4" />
-                  <span>{post.date}</span>
+                  <span>{formatDate(post.publishedAt)}</span>
                 </div>
                 <h3 className="mb-2 text-xl font-bold transition-colors group-hover:text-primary">{post.title}</h3>
-                <p className="mb-4 text-sm text-muted-foreground line-clamp-3 flex-grow">{post.excerpt}</p>
+                <div className="mb-4 text-sm text-muted-foreground line-clamp-3 flex-grow">
+  {post.body && post.body.length > 0 ? (
+    <BlogPortableText value={[post.body[0]]} />
+  ) : null}
+</div>
               </CardContent>
             </Card>
           </CustomLink>
