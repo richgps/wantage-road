@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
 
@@ -20,6 +20,16 @@ export default function PhotoViewer({ photos, initialIndex, onClose, title }: Ph
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [isLoading, setIsLoading] = useState(true)
 
+  const navigateNext = useCallback(() => {
+    setIsLoading(true)
+    setCurrentIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1))
+  }, [photos.length])
+
+  const navigatePrev = useCallback(() => {
+    setIsLoading(true)
+    setCurrentIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1))
+  }, [photos.length])
+
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -34,7 +44,7 @@ export default function PhotoViewer({ photos, initialIndex, onClose, title }: Ph
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [currentIndex, onClose])
+  }, [onClose, navigatePrev, navigateNext]) // Added navigatePrev and navigateNext
 
   // Prevent scrolling when viewer is open
   useEffect(() => {
@@ -43,16 +53,6 @@ export default function PhotoViewer({ photos, initialIndex, onClose, title }: Ph
       document.body.style.overflow = ""
     }
   }, [])
-
-  const navigateNext = () => {
-    setIsLoading(true)
-    setCurrentIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1))
-  }
-
-  const navigatePrev = () => {
-    setIsLoading(true)
-    setCurrentIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1))
-  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black">
@@ -78,7 +78,7 @@ export default function PhotoViewer({ photos, initialIndex, onClose, title }: Ph
       {/* Navigation buttons */}
       <button
         onClick={navigatePrev}
-        className="absolute left-4 z-[110] rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-[110] rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors"
         aria-label="Previous photo"
       >
         <ChevronLeft className="h-8 w-8" />
@@ -86,7 +86,7 @@ export default function PhotoViewer({ photos, initialIndex, onClose, title }: Ph
 
       <button
         onClick={navigateNext}
-        className="absolute right-4 z-[110] rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-[110] rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors"
         aria-label="Next photo"
       >
         <ChevronRight className="h-8 w-8" />
@@ -98,13 +98,13 @@ export default function PhotoViewer({ photos, initialIndex, onClose, title }: Ph
           <Image
             src={photos[currentIndex].src || "/placeholder.svg"}
             alt={photos[currentIndex].alt}
-            width={1200}
+            width={1200} 
             height={800}
             className={`max-h-[90vh] w-auto object-contain transition-opacity duration-300 ${
               isLoading ? "opacity-0" : "opacity-100"
             }`}
             onLoad={() => setIsLoading(false)}
-            priority
+            priority 
           />
         </div>
       </div>

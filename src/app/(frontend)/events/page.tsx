@@ -1,10 +1,12 @@
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { CalendarDays, Clock, MapPin } from "lucide-react"
+// No longer need direct Link, Image, Button, or specific Lucide icons here if EventCard handles all variants
+// import Link from "next/link";
+// import Image from "next/image";
+// import { Button } from "@/components/ui/button";
+// import { CalendarDays, Clock, MapPin } from "lucide-react";
 
-const events = [
+import { EventCard, EventCardType } from "@/components/event-card";
+
+const events: EventCardType[] = [
   {
     id: 1,
     title: "Annual street party",
@@ -45,10 +47,15 @@ const events = [
       "Celebrate the holiday season with your neighbours. We'll have hot drinks, festive food, carol singing, and activities for all ages.",
     image: "/images/street-party-2.png",
   },
-]
+];
 
 export default function EventsPage() {
-  return (
+  const featuredEvent = events.length > 0 ? events[0] : null;
+  const otherEvents = events.length > 1 ? events.slice(1) : [];
+  // Or, if you fetch data, you might have a specific way to determine the featured event
+  // and the rest of the events.
+
+  return ( // <--- Added opening parenthesis here
     <div className="container py-12 md:py-16">
       <div className="mb-10 text-center">
         <h1 className="mb-4 text-4xl font-bold md:text-5xl">Upcoming events</h1>
@@ -57,74 +64,29 @@ export default function EventsPage() {
         </p>
       </div>
 
-      {/* Featured Event */}
-      <div className="mb-12 overflow-hidden rounded-xl border bg-card shadow-sm">
-        <div className="grid md:grid-cols-2">
-          <div className="relative min-h-[300px]">
-            <Image src="/images/street-party-1.png" alt="Annual street party" fill className="object-cover" />
-          </div>
-          <div className="flex flex-col justify-center p-6 md:p-8">
-            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
-              <CalendarDays className="h-4 w-4" />
-              <span>July 5th, 2025</span>
-            </div>
-            <h2 className="mb-2 text-2xl font-bold">Annual street party</h2>
-            <p className="mb-6 text-muted-foreground">
-              Our biggest event of the year! Join us for food, music, games, and a chance to connect with your
-              neighbours. There will be live performances, activities for children, and food stalls.
-            </p>
-            <div className="mb-6 space-y-2">
-              <div className="flex items-start gap-2">
-                <Clock className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                <span>12:00 PM - 6:00 PM</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                <span>Wantage Road, Reading</span>
-              </div>
-            </div>
-            <Button asChild>
-              <Link href="/events/1">Event details</Link>
-            </Button>
+      {featuredEvent && (
+        <EventCard
+          event={featuredEvent}
+          variant="featured"
+          className="mb-12"
+        />
+      )}
+
+      {otherEvents.length > 0 && (
+        <div>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {otherEvents.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* All Events */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {events.slice(1).map((event) => (
-          <Card key={event.id} className="overflow-hidden">
-            <CardHeader className="p-0">
-              <div className="relative h-48">
-                <Image src={event.image || "/placeholder.svg"} alt={event.title} fill className="object-cover" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
-                <CalendarDays className="h-4 w-4" />
-                <span>{event.date}</span>
-              </div>
-              <h3 className="mb-2 text-xl font-bold">{event.title}</h3>
-              <p className="mb-4 text-sm text-muted-foreground line-clamp-3">{event.description}</p>
-              <div className="space-y-1 text-sm">
-                <div className="flex items-start gap-2">
-                  <Clock className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                  <span>{event.time}</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                  <span>{event.location}</span>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="px-6 pb-6 pt-0">
-              <Button asChild variant="outline" className="w-full hover:bg-[rgb(235,235,235)] dark:hover:bg-gray-800">
-                <Link href={`/events/${event.id}`}>View details</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+      {events.length === 0 && (
+         <p className="text-center text-muted-foreground">
+            Check back soon for upcoming events!
+         </p>
+      )}
     </div>
-  )
+  ); // <--- Added closing parenthesis here
 }

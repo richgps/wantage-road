@@ -9,7 +9,7 @@ import { Suspense } from "react";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import ScrollRestoration from "@/components/scroll-restoration";
-import { SanityLive } from "@/sanity/lib/live";
+import { SanityLive } from "@/sanity/lib/live"; // Restore SanityLive
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const poppins = Poppins({
@@ -30,10 +30,10 @@ export default function MainLayout({
 }) {
   return (
     <ThemeProvider
-      attribute="class" // Corresponds to tailwind.config.ts darkMode: "class"
-      defaultTheme="system" // Use system preference as default
-      enableSystem // Allow system preference to be used
-      disableTransitionOnChange // Optional: disable theme change transitions
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
     >
       <div className={`${inter.variable} ${poppins.variable} font-sans`}>
         <Suspense fallback={null}>
@@ -43,7 +43,7 @@ export default function MainLayout({
           <Navbar />
           <main className="flex-1">
             {children}
-            <SanityLive />
+            <SanityLive /> {/* Restore SanityLive */}
           </main>
           <Footer />
         </div>

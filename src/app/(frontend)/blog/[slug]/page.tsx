@@ -1,31 +1,24 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, User, Share2, Clock, MapPin, ArrowLeft } from "lucide-react";
+import { CalendarDays, User, Share2, ArrowLeft } from "lucide-react"; 
 import { client } from '@/sanity/lib/client';
 import { urlFor } from '@/sanity/lib/image';
 import { BlogPortableText } from '@/components/portable-text';
 
-function formatDate(dateStr: string) {
-  if (!dateStr) return '';
-  return new Date(dateStr).toLocaleDateString('en-GB', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
+// Import from date-fns
+import { formatDistanceToNow, parseISO } from 'date-fns';
 
-export default async function BlogPostPage({ params }: { params: { slug: string } | Promise<{ slug: string }> }) {
-  // Await params if it's a Promise (per Next.js dynamic route requirements)
-  const resolvedParams = typeof params.then === 'function' ? await params : params;
-  const { slug } = resolvedParams;
-  // Fetch the post by slug, including author and categories
+// Updated function signature and params handling
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const { slug } = params; // Directly access slug
+
   const post = await client.fetch(
     `*[_type == "post" && slug.current == $slug][0]{
       _id,
       title,
       slug,
-      publishedAt,
+      publishedAt, // Ensure this is a valid ISO 8601 string from Sanity
       mainImage,
       body,
       "author": author->{name, title, image, bio},
@@ -33,8 +26,21 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     }`,
     { slug }
   );
-  // Precompute formattedDate for hydration-safe rendering
-  const formattedDate = formatDate(post?.publishedAt);
+
+  // Compute relative time string
+  let displayTimeAgo = 'Date unavailable';
+  if (post?.publishedAt) {
+    try {
+      const date = parseISO(post.publishedAt);
+      displayTimeAgo = `${formatDistanceToNow(date)} ago`;
+    } catch (error) {
+      console.error("Error parsing date for blog post page:", error);
+      // Fallback to a more static format or the original string if parsing fails
+      displayTimeAgo = new Date(post.publishedAt).toLocaleDateString('en-GB', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+    }
+  }
 
   if (!post) {
     return (
@@ -75,7 +81,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4" />
-                  <span>{formattedDate}</span>
+                  {/* Use the new displayTimeAgo variable */}
+                  <span>{displayTimeAgo}</span>
                 </div>
                 {post.author?.name && (
                   <div className="flex items-center gap-2">
@@ -94,9 +101,14 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               </div>
             )}
 
-            <div className="prose max-w-none dark:prose-invert">
-              <BlogPortableText value={post.body} />
-            </div>
+            {post.body && post.body.length > 0 ? (
+              <div className="prose max-w-none dark:prose-invert">
+                <BlogPortableText value={post.body} />
+              </div>
+            ) : (
+              <p className="text-muted-foreground">This post has no content.</p> 
+            )}
+
 
             <div className="mt-8 flex items-center justify-between border-t border-b py-4">
               <div className="flex items-center gap-4">
@@ -145,10 +157,12 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                   <p className="text-sm text-muted-foreground">{post.author?.title}</p>
                 </div>
               </div>
-              {post.author?.bio && (
+              {post.author?.bio && post.author.bio.length > 0 ? (
                 <div className="mt-4 text-sm text-muted-foreground">
                   <BlogPortableText value={post.author.bio} />
                 </div>
+              ) : (
+                post.author && <p className="mt-4 text-sm text-muted-foreground italic">Author bio not available.</p> 
               )}
             </div>
 
@@ -168,6 +182,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
