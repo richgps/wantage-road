@@ -1,48 +1,43 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import { Moon, Sun } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useTheme } from "next-themes"
-import { CustomLink } from "@/components/ui/link"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes"; // Keep this import
+import { CustomLink } from "@/components/ui/link";
 
 export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { theme } = useTheme()
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Get theme and setTheme from useTheme
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   // Close menu when resizing to desktop
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) setIsMenuOpen(false)
-    }
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+      if (window.innerWidth >= 768) setIsMenuOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Prevent background scroll when menu is open
   useEffect(() => {
-    document.body.style.overflow = isMenuOpen ? "hidden" : ""
+    document.body.style.overflow = isMenuOpen ? "hidden" : "";
     return () => {
-      document.body.style.overflow = ""
-    }
-  }, [isMenuOpen])
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]);
 
   const toggleTheme = () => {
-    const newTheme = document.documentElement.classList.contains("dark") ? "light" : "dark"
-    if (newTheme === "dark") {
-      document.documentElement.classList.add("dark")
-      localStorage.setItem("theme", "dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-      localStorage.setItem("theme", "light")
-    }
-  }
+    // Use resolvedTheme to correctly toggle from 'system' to light/dark
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
 
-  const toggleMenu = () => setIsMenuOpen((prev) => !prev)
+  const toggleMenu = () => setIsMenuOpen((prev) => !prev);
 
-  const navLinks = ["/", "/events", "/blog", "/gallery", "/contact"]
-  const navLabels = ["Home", "Events", "Blog", "Gallery", "Contact"]
+  const navLinks = ["/", "/events", "/blog", "/gallery", "/contact"];
+  const navLabels = ["Home", "Events", "Blog", "Gallery", "Contact"];
 
   return (
     <>
@@ -79,7 +74,7 @@ export default function Navbar() {
             <Button
               variant="outline"
               size="icon"
-              onClick={toggleTheme}
+              onClick={toggleTheme} // This will now use the new toggleTheme
               className="hidden md:flex hover:bg-[rgb(235,235,235)] dark:hover:bg-gray-800"
             >
               <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -138,7 +133,7 @@ export default function Navbar() {
           <Button
             variant="outline"
             size="icon"
-            onClick={toggleTheme}
+            onClick={toggleTheme} // This will now use the new toggleTheme
             className="mt-8 hover:bg-[rgb(235,235,235)] dark:hover:bg-gray-800"
           >
             <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -148,5 +143,5 @@ export default function Navbar() {
         </nav>
       </div>
     </>
-  )
+  );
 }
