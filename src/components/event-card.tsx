@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
 
 type EventItem = {
-  id: string | number;
-  slug?: string;
+  id: string | number; // Keep id if it's used for keys or other non-URL purposes
+  slug: string; // Make slug non-optional
   image?: string | null;
   title: string;
   date: string;
@@ -23,9 +23,11 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, variant = 'default', className }: EventCardProps) {
-  const eventUrl = event.slug ? `/events/${event.slug}` : `/events/${event.id}`;
+  // Always use the slug for the URL
+  const eventUrl = `/events/${event.slug}`;
   const isFeatured = variant === 'featured';
 
+  // ... (EventImageContent, TextualContent, DetailsButton remain the same)
   const EventImageContent = (
     <Image
       src={event.image || "/images/placeholder.jpg"}
@@ -49,13 +51,13 @@ export function EventCard({ event, variant = 'default', className }: EventCardPr
       </p>
       <div className={`space-y-1 text-sm ${isFeatured ? 'mb-6' : 'mb-4'}`}>
         {event.time && (
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-2 text-muted-foreground">
             <Clock className="mt-0.5 h-4 w-4 flex-shrink-0" />
             <span>{event.time}</span>
           </div>
         )}
         {event.location && (
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-2 text-muted-foreground">
             <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" />
             <span>{event.location}</span>
           </div>
@@ -79,13 +81,11 @@ export function EventCard({ event, variant = 'default', className }: EventCardPr
     return (
       <div className={`overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm ${className || ''}`}>
         <div className="grid md:grid-cols-2">
-          {/* Featured Image Section - Wrapped in Link */}
-          <Link href={eventUrl} aria-label={`View details for ${event.title}`} className="block h-full"> {/* ADDED h-full */}
-            <div className="relative min-h-[300px] h-full"> {/* CHANGED md:min-h-full to h-full */}
+          <Link href={eventUrl} aria-label={`View details for ${event.title}`} className="block h-full">
+            <div className="relative min-h-[300px] h-full">
               {EventImageContent}
             </div>
           </Link>
-          {/* Featured Content & Button Section */}
           <div className="flex flex-col justify-center p-6 md:p-8">
             <TextualContent />
             {DetailsButton}

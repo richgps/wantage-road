@@ -1,14 +1,9 @@
-// No longer need direct Link, Image, Button, or specific Lucide icons here if EventCard handles all variants
-// import Link from "next/link";
-// import Image from "next/image";
-// import { Button } from "@/components/ui/button";
-// import { CalendarDays, Clock, MapPin } from "lucide-react";
-
 import { EventCard, EventCardType } from "@/components/event-card";
 
 const events: EventCardType[] = [
   {
-    id: 1,
+    id: 1, // Keep id as string or number based on your preference for keys
+    slug: "annual-street-party", // Added slug
     title: "Annual street party",
     date: "July 5th, 2025",
     time: "12:00 PM - 6:00 PM",
@@ -19,6 +14,7 @@ const events: EventCardType[] = [
   },
   {
     id: 2,
+    slug: "summer-gardening-workshop", // Added slug
     title: "Summer gardening workshop",
     date: "May 15th, 2025",
     time: "10:00 AM - 12:00 PM",
@@ -29,6 +25,7 @@ const events: EventCardType[] = [
   },
   {
     id: 3,
+    slug: "neighbourhood-cleanup-day", // Added slug
     title: "Neighbourhood cleanup day",
     date: "April 22nd, 2025",
     time: "9:00 AM - 1:00 PM",
@@ -39,6 +36,7 @@ const events: EventCardType[] = [
   },
   {
     id: 4,
+    slug: "winter-holiday-celebration", // Added slug
     title: "Winter holiday celebration",
     date: "December 12th, 2025",
     time: "4:00 PM - 8:00 PM",
@@ -52,10 +50,8 @@ const events: EventCardType[] = [
 export default function EventsPage() {
   const featuredEvent = events.length > 0 ? events[0] : null;
   const otherEvents = events.length > 1 ? events.slice(1) : [];
-  // Or, if you fetch data, you might have a specific way to determine the featured event
-  // and the rest of the events.
 
-  return ( // <--- Added opening parenthesis here
+  return (
     <div className="container py-12 md:py-16">
       <div className="mb-10 text-center">
         <h1 className="mb-4 text-4xl font-bold md:text-5xl">Upcoming events</h1>
@@ -74,9 +70,14 @@ export default function EventsPage() {
 
       {otherEvents.length > 0 && (
         <div>
+          <h2 className="mb-8 text-3xl font-bold text-center md:text-4xl">
+            More Events
+          </h2>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {otherEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
+              // Ensure event.id is used for the key if it's unique and stable.
+              // If slug is guaranteed unique, event.slug could also be used.
+              <EventCard key={event.id.toString()} event={event} />
             ))}
           </div>
         </div>
@@ -88,5 +89,5 @@ export default function EventsPage() {
          </p>
       )}
     </div>
-  ); // <--- Added closing parenthesis here
+  );
 }

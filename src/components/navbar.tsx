@@ -6,6 +6,7 @@ import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes"; // Keep this import
 import { CustomLink } from "@/components/ui/link";
+import WantageLogo from '@/components/wantageLogo.jsx'; // Changed import for default export and casing
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,13 +47,7 @@ export default function Navbar() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           {/* Logo */}
           <CustomLink href="/" className="flex items-center gap-2">
-            <Image
-              src="/images/wantage-logo.png"
-              alt="Wantage Road Logo"
-              width={40}
-              height={40}
-              className="h-10 w-auto"
-            />
+          <WantageLogo /> {/* Changed casing */}
             <span className="hidden md:inline-block font-poppins text-xl font-bold">Wantage Road</span>
           </CustomLink>
 

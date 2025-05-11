@@ -11,6 +11,7 @@ import { BlogCard, BlogCardType } from "@/components/blog-card";
 
 const mockFeaturedEvent: EventCardType = {
   id: 1,
+  slug: "annual-street-party", // Added slug
   title: "Annual street party",
   date: "July 5th, 2025",
   time: "12:00 PM - 6:00 PM",
@@ -22,8 +23,8 @@ const mockFeaturedEvent: EventCardType = {
 
 export default async function Home() {
   // Fetch posts for the blog section.
-  const result = await sanityFetch({ query: POSTS_QUERY }); // Remove generic here
-  const posts: BlogCardType[] = result.data || []; // Access data property and type posts
+  const result = await sanityFetch({ query: POSTS_QUERY }); 
+  const posts: BlogCardType[] = result.data || []; 
 
   return (
     <div className="flex flex-col">

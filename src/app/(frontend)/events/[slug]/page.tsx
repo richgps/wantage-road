@@ -1,3 +1,4 @@
+// src/app/(frontend)/events/[slug]/page.tsx
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -8,6 +9,7 @@ const events = [
   {
     id: "1",
     title: "Annual street party",
+    slug: "annual-street-party",
     date: "July 5th, 2025",
     time: "12:00 PM - 6:00 PM",
     location: "Wantage Road, Reading",
