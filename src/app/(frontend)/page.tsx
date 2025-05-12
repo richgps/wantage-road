@@ -1,30 +1,29 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
-import { CalendarDays, Camera, Mail } from "lucide-react"; 
+import { Card, CardContent } from "@/components/ui/card";
+import { Camera, Mail } from "lucide-react";
 import { sanityFetch } from "@/sanity/lib/live";
-import { POSTS_QUERY } from "@/sanity/lib/queries";
-
-import { EventCard, EventCardType } from "@/components/event-card";
+import { POSTS_QUERY, LATEST_EVENT_QUERY } from "@/sanity/lib/queries";
+// No longer need urlFor here as EventCard handles it
+// import { urlFor } from "@/sanity/lib/image"; 
+import { EventCard, EventCardType } from "@/components/event-card"; // EventCardType now refers to RawSanityEventProps
 import { BlogCard, BlogCardType } from "@/components/blog-card";
 
-const mockFeaturedEvent: EventCardType = {
-  id: 1,
-  slug: "annual-street-party", // Added slug
-  title: "Annual street party",
-  date: "July 5th, 2025",
-  time: "12:00 PM - 6:00 PM",
-  location: "Wantage Road, Reading",
-  description:
-    "Our biggest event of the year! Join us for food, music, games, and a chance to connect with your neighbours.",
-  image: "/images/street-party-1.png",
-};
+// RawSanityEventProps is now defined and exported from event-card.tsx as EventCardType
+// The formatDate helper is also removed as similar logic is in EventCard.tsx
 
 export default async function Home() {
-  // Fetch posts for the blog section.
-  const result = await sanityFetch({ query: POSTS_QUERY }); 
-  const posts: BlogCardType[] = result.data || []; 
+  const postsData = await sanityFetch<{ data: BlogCardType[] }>({ query: POSTS_QUERY });
+  const posts: BlogCardType[] = postsData.data || [];
+
+  // Fetch the latest event - EventCardType here is actually RawSanityEventProps from event-card.tsx
+  const latestEventData = await sanityFetch<{ data: EventCardType | null }>({ query: LATEST_EVENT_QUERY });
+  const latestEvent = latestEventData.data; // This is the raw event data, or null
+
+  // No more manual transformation needed here
+  // let latestEventForCard: EventCardType | null = null;
+  // if (rawEvent) { ... }
 
   return (
     <div className="flex flex-col">
@@ -43,7 +42,7 @@ export default async function Home() {
             </div>
           </div>
         </div>
-        <div className="container relative z-10 py-24 md:py-36">
+        <div className="container relative z-10 py-12 md:py-12">
           <div className="mx-auto max-w-3xl text-center">
             <Image
               src="/images/wantage-logo.png"
@@ -83,7 +82,12 @@ export default async function Home() {
             <p className="mx-auto max-w-2xl text-muted-foreground">Join us for our upcoming events and activities</p>
           </div>
           <div className="mx-auto max-w-4xl">
-            <EventCard event={mockFeaturedEvent} variant="featured" />
+            {latestEvent ? (
+              // Pass the raw Sanity event data directly to EventCard
+              <EventCard event={latestEvent} variant="featured" />
+            ) : (
+              <p className="text-center text-muted-foreground">No upcoming events scheduled at the moment. Check back soon!</p>
+            )}
           </div>
         </div>
       </section>

@@ -4,33 +4,107 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
+import { urlFor } from "@/sanity/lib/image";
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import { format as formatDateFns, isSameDay } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz'; // Corrected import
 
-type EventItem = {
-  id: string | number; // Keep id if it's used for keys or other non-URL purposes
-  slug: string; // Make slug non-optional
-  image?: string | null;
+export interface RawSanityEventProps {
+  _id: string | number;
+  slug: string;
+  mainImage?: SanityImageSource | null;
   title: string;
-  date: string;
-  time?: string;
+  eventDateTime?: string;
+  eventEndDateTime?: string;
+  timeDisplay?: string | null;
   location?: string;
   description: string;
-};
+}
 
 interface EventCardProps {
-  event: EventItem;
+  event: RawSanityEventProps;
   variant?: 'default' | 'featured';
   className?: string;
 }
 
+const timeZone = 'Europe/London';
+
+// Helper function to format a single date string into a readable date (e.g., 5 July 2024)
+function formatEventDate(isoString?: string): string {
+  if (!isoString) return "Date TBD";
+  try {
+    const date = new Date(isoString);
+    // The toZonedTime function expects the date and the target timeZone.
+    // The original date object is assumed to be UTC if it's an ISO string, 
+    // or it might be local if created differently. New Date(isoString) typically parses as UTC.
+    const zonedDate = toZonedTime(date, timeZone);
+    return formatDateFns(zonedDate, 'd MMMM yyyy'); // No need to pass timeZone to formatDateFns if zonedDate is already correct
+  } catch (error) {
+    console.error("Error formatting date with date-fns:", error, "Input:", isoString);
+    return "Invalid Date";
+  }
+}
+
+// Helper function to format time (e.g., 12:00 pm)
+function formatTime(isoString?: string): string {
+  if (!isoString) return "";
+  try {
+    const date = new Date(isoString);
+    const zonedDate = toZonedTime(date, timeZone);
+    return formatDateFns(zonedDate, 'hh:mm a').toLowerCase(); // hh:mm a gives AM/PM, toLowerCase for pm/am
+  } catch (error) {
+    console.error("Error formatting time with date-fns:", error, "Input:", isoString);
+    return "Invalid Time";
+  }
+}
+
+// Helper function to format the full time display string
+function getFormattedTimeDisplay(event: RawSanityEventProps): string {
+  if (event.timeDisplay) {
+    return event.timeDisplay; // Use custom override if present
+  }
+
+  if (!event.eventDateTime) {
+    return "Time TBD";
+  }
+
+  try {
+    const zonedStartDate = toZonedTime(new Date(event.eventDateTime), timeZone);
+    const startTimeFormatted = formatTime(event.eventDateTime);
+
+    if (!event.eventEndDateTime) {
+      return startTimeFormatted; // Only start time known
+    }
+
+    const zonedEndDate = toZonedTime(new Date(event.eventEndDateTime), timeZone);
+    const endTimeFormatted = formatTime(event.eventEndDateTime);
+
+    if (isSameDay(zonedStartDate, zonedEndDate)) {
+      return `${startTimeFormatted} - ${endTimeFormatted}`;
+    } else {
+      const endDateFormatted = formatEventDate(event.eventEndDateTime);
+      return `${startTimeFormatted} - ${endTimeFormatted}, ${endDateFormatted}`;
+    }
+  } catch (error) {
+    console.error("Error in getFormattedTimeDisplay:", error, "Event Data:", event);
+    return "Time Error";
+  }
+}
+
 export function EventCard({ event, variant = 'default', className }: EventCardProps) {
-  // Always use the slug for the URL
   const eventUrl = `/events/${event.slug}`;
   const isFeatured = variant === 'featured';
 
-  // ... (EventImageContent, TextualContent, DetailsButton remain the same)
+  const imageUrl = event.mainImage
+    ? urlFor(event.mainImage).width(isFeatured ? 800 : 400).height(isFeatured ? 600 : 300).fit('crop').url()
+    : "/images/placeholder.jpg";
+
+  const displayDate = formatEventDate(event.eventDateTime);
+  const displayTime = getFormattedTimeDisplay(event);
+
   const EventImageContent = (
     <Image
-      src={event.image || "/images/placeholder.jpg"}
+      src={imageUrl}
       alt={`Image for ${event.title}`}
       fill
       className={`object-cover ${!isFeatured ? 'transition-transform duration-300 group-hover:scale-105' : ''}`}
@@ -41,7 +115,7 @@ export function EventCard({ event, variant = 'default', className }: EventCardPr
     <>
       <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
         <CalendarDays className="h-4 w-4 flex-shrink-0" />
-        <span>{event.date}</span>
+        <span>{displayDate}</span>
       </div>
       <h3 className={`mb-2 font-bold line-clamp-2 ${isFeatured ? 'text-2xl lg:text-3xl' : 'text-xl group-hover:text-primary transition-colors'}`}>
         {event.title}
@@ -50,10 +124,10 @@ export function EventCard({ event, variant = 'default', className }: EventCardPr
         {event.description}
       </p>
       <div className={`space-y-1 text-sm ${isFeatured ? 'mb-6' : 'mb-4'}`}>
-        {event.time && (
+        {displayTime && !["Invalid Time", "Time Error", "Time TBD"].includes(displayTime) && (
           <div className="flex items-start gap-2 text-muted-foreground">
             <Clock className="mt-0.5 h-4 w-4 flex-shrink-0" />
-            <span>{event.time}</span>
+            <span>{displayTime}</span>
           </div>
         )}
         {event.location && (
@@ -95,7 +169,6 @@ export function EventCard({ event, variant = 'default', className }: EventCardPr
     );
   }
 
-  // Default card layout
   return (
     <Card className={`flex flex-col h-full overflow-hidden group ${className || ''}`}>
       <Link href={eventUrl} aria-label={`View details for ${event.title}`} className="block">
@@ -115,4 +188,4 @@ export function EventCard({ event, variant = 'default', className }: EventCardPr
   );
 }
 
-export type { EventItem as EventCardType };
+export type { RawSanityEventProps as EventCardType };

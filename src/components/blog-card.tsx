@@ -3,15 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarDays } from "lucide-react"; // Could be replaced with a Clock icon if preferred for "time ago"
+import { CalendarDays } from "lucide-react";
 import { urlFor } from "@/sanity/lib/image";
 import { BlogPortableText } from "@/components/portable-text";
 
 // Import from date-fns
-import { formatDistanceToNow, parseISO } from 'date-fns';
-
-// Old formatDate function is no longer needed
-// function formatDate(dateStr: string): string { ... }
+import { format as formatDateFnsAlias, formatDistanceToNow, parseISO } from 'date-fns'; // Aliased format for clarity
+import { toZonedTime } from 'date-fns-tz'; // Import for timezone conversion
 
 type BlogItem = {
   _id: string;
@@ -28,6 +26,8 @@ interface BlogCardProps {
   className?: string;
 }
 
+const timeZone = 'Europe/London'; // Define the target timezone
+
 export function BlogCard({ post, variant = 'default', className }: BlogCardProps) {
   const postUrl = post.slug?.current ? `/blog/${post.slug.current}` : '#';
   const isFeatured = variant === 'featured';
@@ -36,45 +36,54 @@ export function BlogCard({ post, variant = 'default', className }: BlogCardProps
   if (post.publishedAt) {
     try {
       const date = parseISO(post.publishedAt); // Parse ISO string to Date object
+      // formatDistanceToNow is generally fine as is, relative to user's current time
       displayDate = `${formatDistanceToNow(date)} ago`;
     } catch (error) {
-      console.error("Error parsing date for blog card:", error);
-      // Fallback to original string if parsing fails, or a static message
-      displayDate = new Date(post.publishedAt).toLocaleDateString('en-GB', {
-        year: 'numeric', month: 'long', day: 'numeric'
-      });
+      console.error("Error parsing date for blog card (formatDistanceToNow):", error);
+      // Fallback to absolute date, now with timezone conversion
+      try {
+        const date = parseISO(post.publishedAt); // Re-parse or use already parsed if structure allows
+        const zonedDate = toZonedTime(date, timeZone);
+        displayDate = formatDateFnsAlias(zonedDate, 'd MMMM yyyy');
+      } catch (fallbackError) {
+        console.error("Error formatting fallback date for blog card:", fallbackError);
+        displayDate = "Date unavailable"; // Ultimate fallback
+      }
     }
   }
 
-  const PostImageContent = post.mainImage ? (
+  const imageUrl = post.mainImage
+    ? urlFor(post.mainImage).width(isFeatured ? 800 : 400).height(isFeatured ? (isFeatured ? 450 : 225) : 300).fit('crop').url()
+    : "/images/placeholder.jpg";
+
+  const BlogImageContent = (
     <Image
-      src={urlFor(post.mainImage).width(isFeatured ? 800 : 600).height(isFeatured ? 500 : 300).url()}
+      src={imageUrl}
       alt={`Image for ${post.title}`}
       fill
       className={`object-cover ${!isFeatured ? 'transition-transform duration-300 group-hover:scale-105' : ''}`}
     />
-  ) : (
-    <div className="flex items-center justify-center h-full bg-muted">
-      <CalendarDays className="w-12 h-12 text-muted-foreground" />
-    </div>
   );
 
   const TextualContent = () => (
     <>
-      <div className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+      <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
         <CalendarDays className="h-4 w-4 flex-shrink-0" />
         <span>{displayDate}</span>
       </div>
-      <h3 className={`mb-2 font-bold ${isFeatured ? 'text-2xl lg:text-3xl line-clamp-3' : 'text-xl group-hover:text-primary transition-colors line-clamp-2'}`}>
-        {post.title || "Untitled Post"}
+      <h3 className={`mb-2 font-bold line-clamp-2 ${isFeatured ? 'text-2xl lg:text-3xl' : 'text-xl group-hover:text-primary transition-colors'}`}>
+        {post.title}
       </h3>
-      <div className={`text-sm text-muted-foreground flex-grow ${isFeatured ? 'line-clamp-4 md:line-clamp-5 mb-6' : 'line-clamp-3 mb-4'}`}>
-        {post.body && post.body.length > 0 ? (
-          <BlogPortableText value={[post.body[0]]} />
-        ) : (
-          <p>No excerpt available.</p>
-        )}
-      </div>
+      {isFeatured && post.body && (
+        <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground line-clamp-4 mb-4">
+          <BlogPortableText value={post.body} />
+        </div>
+      )}
+      {!isFeatured && post.body && (
+         <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground line-clamp-2 mb-4">
+          <BlogPortableText value={post.body} />
+        </div>
+      )}
     </>
   );
 
@@ -94,8 +103,8 @@ export function BlogCard({ post, variant = 'default', className }: BlogCardProps
       <div className={`overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm ${className || ''}`}>
         <div className="grid md:grid-cols-2">
           <Link href={postUrl} aria-label={`Read more about ${post.title}`} className="block h-full">
-            <div className="relative min-h-[300px] h-full">
-              {PostImageContent}
+            <div className="relative min-h-[300px] h-full md:min-h-[450px]">
+              {BlogImageContent}
             </div>
           </Link>
           <div className="flex flex-col justify-center p-6 md:p-8">
@@ -112,7 +121,7 @@ export function BlogCard({ post, variant = 'default', className }: BlogCardProps
       <Link href={postUrl} aria-label={`Read more about ${post.title}`} className="block">
         <CardHeader className="p-0">
           <div className="relative h-48 w-full">
-            {PostImageContent}
+            {BlogImageContent}
           </div>
         </CardHeader>
       </Link>

@@ -1,63 +1,111 @@
 // src/app/(frontend)/events/[slug]/page.tsx
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { CalendarDays, Clock, MapPin, Users, Music, Utensils } from "lucide-react"
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button"; 
+import { CalendarDays, Clock, MapPin, Users, Music, Utensils, Info, Mail } from "lucide-react";
+import { sanityFetch } from "@/sanity/lib/live";
+import { EVENT_BY_SLUG_QUERY } from "@/sanity/lib/queries";
+import { urlFor } from "@/sanity/lib/image";
+import { BlogPortableText } from "@/components/portable-text";
+import Countdown from "@/components/countdown"; 
+import { notFound } from 'next/navigation';
+import { format as formatDateFns, parseISO } from 'date-fns';
+import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
+import ClientAddToCalendarButton from "@/components/client-add-to-calendar-button";
 
-// This would typically come from a database
-const events = [
-  {
-    id: "1",
-    title: "Annual street party",
-    slug: "annual-street-party",
-    date: "July 5th, 2025",
-    time: "12:00 PM - 6:00 PM",
-    location: "Wantage Road, Reading",
-    description:
-      "Our biggest event of the year! Join us for food, music, games, and a chance to connect with your neighbours. The Annual Street Party has been a tradition in Wantage Road for over a decade, bringing together residents of all ages for a day of celebration and community spirit.",
-    longDescription: `
-      <p>The Annual Street Party is the highlight of our community calendar, a day when Wantage Road transforms into a vibrant celebration of neighbourhood spirit and togetherness.</p>
-      
-      <p>This year's event will feature:</p>
-      <ul>
-        <li><strong>Live Music:</strong> Local bands and musicians will perform throughout the day, providing a soundtrack to our celebrations.</li>
-        <li><strong>Food & Drinks:</strong> A variety of food stalls offering everything from barbecue to international cuisine, as well as refreshing beverages for all ages.</li>
-        <li><strong>Children's Activities:</strong> Face painting, bubble machines, chalk art, and games to keep the younger members of our community entertained.</li>
-        <li><strong>Community Showcase:</strong> Displays and information about local initiatives, clubs, and organisations.</li>
-        <li><strong>Raffle & Fundraising:</strong> Opportunities to support community projects through our annual raffle with prizes donated by local businesses.</li>
-      </ul>
-      
-      <p>The street will be closed to traffic for the duration of the event, creating a safe space for everyone to enjoy the festivities. Bunting and decorations will adorn the street, creating a festive atmosphere that has become synonymous with our annual celebration.</p>
-      
-      <p>This event is made possible through the hard work of volunteers and the generosity of local sponsors. If you'd like to get involved in the planning or contribute in any way, please contact the organising committee.</p>
-      
-      <p>We encourage all residents to join us for this special day. It's a wonderful opportunity to strengthen community bonds, meet new neighbours, and create lasting memories together.</p>
-    `,
-    image: "/images/street-party-1.png",
-    gallery: ["/images/street-party-1.png", "/images/street-party-2.png", "/images/street-party-3.png"],
-    organizer: "Wantage Road Community Committee",
-    contact: "events@wantageroad.org",
-    highlights: [
-      { icon: <Music className="h-5 w-5" />, title: "Live music", description: "Local bands and performers" },
-      { icon: <Utensils className="h-5 w-5" />, title: "Food stalls", description: "Various cuisines and treats" },
-      {
-        icon: <Users className="h-5 w-5" />,
-        title: "Community activities",
-        description: "Games and entertainment for all ages",
-      },
-    ],
-  },
-]
+interface SanityEvent {
+  _id: string;
+  title: string;
+  slug: string; 
+  eventDateTime?: string;
+  eventEndDateTime?: string;
+  timeDisplay?: string | null;
+  location?: string;
+  description?: string; 
+  longDescription?: any[]; 
+  mainImage?: any;
+  gallery?: any[];
+  features?: Array<{
+    iconName?: string;
+    title?: string; 
+    description?: string; 
+    _key?: string; 
+  }>;
+  organizer?: string;
+  contactEmail?: string;
+}
 
-export default async function EventDetailsPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  // Await the dynamic route params before using them
-  const { id } = await params
+const timeZone = 'Europe/London';
 
-  const event = events.find((e) => e.id === id) || events[0]
+function formatEventPageDate(isoString?: string): string {
+  if (!isoString) return "Date TBD";
+  try {
+    const date = parseISO(isoString);
+    return formatInTimeZone(date, timeZone, 'PPPP');
+  } catch (e) { return "Invalid Date"; }
+}
+
+function formatEventPageTime(isoString?: string, timeDisplay?: string | null): string {
+  if (timeDisplay) return timeDisplay;
+  if (!isoString) return "Time TBD";
+  try {
+    const date = parseISO(isoString);
+    return formatInTimeZone(date, timeZone, 'p');
+  } catch (e) { return "Invalid Time"; }
+}
+
+function getCalendarDate(isoString?: string): string {
+  if (!isoString) return '';
+  try {
+    return formatInTimeZone(parseISO(isoString), timeZone, 'yyyy-MM-dd');
+  } catch { return '' }
+}
+
+function getCalendarTime(isoString?: string): string {
+  if (!isoString) return '';
+  try {
+    return formatInTimeZone(parseISO(isoString), timeZone, 'HH:mm');
+  } catch { return '' }
+}
+
+const getLucideIcon = (iconName?: string) => {
+  if (!iconName) return <Info className="h-5 w-5" />;
+  switch (iconName.toLowerCase()) {
+    case 'music': return <Music className="h-5 w-5" />;
+    case 'utensils': return <Utensils className="h-5 w-5" />;
+    case 'users': return <Users className="h-5 w-5" />;
+    case 'calendardays': return <CalendarDays className="h-5 w-5" />;
+    default: return <Info className="h-5 w-5" />;
+  }
+};
+
+interface EventDetailsPageProps {
+  params: { slug: string };
+}
+
+// This is an async Server Component
+export default async function EventDetailsPage({ params }: EventDetailsPageProps) {
+  const slug = params.slug; // Directly access slug from params
+  
+  if (!slug) {
+    // This case should ideally not be hit if the route is [slug]
+    // but it's a safeguard.
+    notFound();
+  }
+
+  const eventData = await sanityFetch<{ data: SanityEvent | null }>({ 
+    query: EVENT_BY_SLUG_QUERY, 
+    params: { slug } // Pass the slug to the query
+  });
+  const event = eventData.data;
+
+  if (!event) {
+    notFound(); 
+  }
+
+  const formattedDate = formatEventPageDate(event.eventDateTime);
+  const formattedTime = formatEventPageTime(event.eventDateTime, event.timeDisplay);
+  const fullDateTimeDisplay = `${formattedDate}${formattedTime && formattedTime !== "Time TBD" ? `, ${formattedTime}` : ''}`;
 
   return (
     <div className="container py-12 md:py-16">
@@ -70,122 +118,159 @@ export default async function EventDetailsPage({
         </Link>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-12 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <div className="mb-6 overflow-hidden rounded-xl">
-            <div className="relative aspect-video">
-              <Image src={event.image || "/placeholder.svg"} alt={event.title} fill className="object-cover" />
+          {event.mainImage && (
+            <div className="mb-6 overflow-hidden rounded-xl shadow-lg">
+              <div className="relative aspect-[16/9]">
+                <Image 
+                  src={urlFor(event.mainImage).width(1200).height(675).url()} 
+                  alt={event.title} 
+                  fill 
+                  className="object-cover"
+                  priority
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="mb-8">
-            <h1 className="mb-4 text-3xl font-bold md:text-4xl">{event.title}</h1>
-
+            <h1 className="mb-4 text-3xl font-bold md:text-4xl lg:text-5xl">{event.title}</h1>
             <div className="mb-6 grid gap-4 sm:grid-cols-3">
-              <div className="flex items-start gap-3 rounded-lg border p-4">
-                <CalendarDays className="mt-0.5 h-5 w-5 text-primary" />
+              <div className="flex items-start gap-3 rounded-lg border bg-card p-4 shadow-sm">
+                <CalendarDays className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
                 <div>
-                  <p className="text-sm font-medium">Date</p>
-                  <p className="text-muted-foreground">{event.date}</p>
+                  <p className="text-sm font-medium text-card-foreground">Date</p>
+                  <p className="text-sm text-muted-foreground">{formattedDate}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 rounded-lg border p-4">
-                <Clock className="mt-0.5 h-5 w-5 text-primary" />
+              <div className="flex items-start gap-3 rounded-lg border bg-card p-4 shadow-sm">
+                <Clock className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
                 <div>
-                  <p className="text-sm font-medium">Time</p>
-                  <p className="text-muted-foreground">{event.time}</p>
+                  <p className="text-sm font-medium text-card-foreground">Time</p>
+                  <p className="text-sm text-muted-foreground">{formattedTime}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 rounded-lg border p-4">
-                <MapPin className="mt-0.5 h-5 w-5 text-primary" />
+              <div className="flex items-start gap-3 rounded-lg border bg-card p-4 shadow-sm">
+                <MapPin className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
                 <div>
-                  <p className="text-sm font-medium">Location</p>
-                  <p className="text-muted-foreground">{event.location}</p>
+                  <p className="text-sm font-medium text-card-foreground">Location</p>
+                  <p className="text-sm text-muted-foreground">{event.location || "To be announced"}</p>
                 </div>
               </div>
             </div>
 
-            <div
-              className="prose max-w-none dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: event.longDescription }}
-            />
+            {event.longDescription && (
+              <div className="prose prose-lg dark:prose-invert max-w-none mb-8">
+                <BlogPortableText value={event.longDescription} />
+              </div>
+            )}
           </div>
 
-          <div className="mb-8">
-            <h2 className="mb-4 text-2xl font-bold">Event highlights</h2>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {event.highlights.map((highlight, index) => (
-                <div key={index} className="flex flex-col items-center rounded-lg border p-4 text-center">
-                  <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    {highlight.icon}
+          {event.features && event.features.length > 0 && (
+            <div className="mb-8">
+              <h2 className="mb-6 text-2xl font-bold md:text-3xl">Event Highlights</h2>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {event.features.map((feature) => (
+                  <div key={feature._key || feature.title} className="flex flex-col items-center rounded-lg border bg-card p-6 text-center shadow-sm">
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      {getLucideIcon(feature.iconName)}
+                    </div>
+                    <h3 className="mb-1 text-lg font-semibold text-card-foreground">{feature.title}</h3>
+                    {feature.description && (
+                      <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    )}
                   </div>
-                  <h3 className="mb-1 font-semibold">{highlight.title}</h3>
-                  <p className="text-sm text-muted-foreground">{highlight.description}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div>
-            <h2 className="mb-4 text-2xl font-bold">Gallery</h2>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {event.gallery.map((image, index) => (
-                <div key={index} className="overflow-hidden rounded-lg">
-                  <div className="relative aspect-square">
-                    <Image
-                      src={image || "/placeholder.svg"}
-                      alt={`${event.title} - Image ${index + 1}`}
-                      fill
-                      className="object-cover transition-transform hover:scale-105"
-                    />
+          {event.gallery && event.gallery.length > 0 && (
+            <div>
+              <h2 className="mb-6 text-2xl font-bold md:text-3xl">Gallery</h2>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                {event.gallery.map((imageItem, index) => (
+                  <div key={imageItem._key || index} className="overflow-hidden rounded-lg shadow-md">
+                    <div className="relative aspect-square">
+                      <Image
+                        src={urlFor(imageItem).width(400).height(400).url()}
+                        alt={`${event.title} - Gallery Image ${index + 1}`}
+                        fill
+                        className="object-cover transition-transform duration-300 hover:scale-105"
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        <div>
-          <div className="sticky top-24 rounded-xl border bg-card p-6 shadow-sm">
-            <h2 className="mb-4 text-xl font-bold">Event information</h2>
-
-            <div className="mb-6 space-y-4">
-              <div className="flex items-start gap-3">
-                <Users className="mt-0.5 h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Organiser</p>
-                  <p className="text-sm text-muted-foreground">{event.organizer}</p>
+        <aside className="lg:col-span-1">
+          <div className="sticky top-24 space-y-6">
+            <div className="rounded-xl border bg-card p-6 shadow-sm">
+              <h2 className="mb-4 text-xl font-semibold text-card-foreground">Event Details</h2>
+              <div className="space-y-3 text-sm">
+                {event.organizer && (
+                  <div className="flex items-start gap-3">
+                    <Users className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                    <div>
+                      <p className="font-medium text-card-foreground">Organiser</p>
+                      <p className="text-muted-foreground">{event.organizer}</p>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-start gap-3">
+                  <CalendarDays className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                  <div>
+                    <p className="font-medium text-card-foreground">Date & Time</p>
+                    <p className="text-muted-foreground">{fullDateTimeDisplay}</p>
+                  </div>
                 </div>
+                {event.location && (
+                  <div className="flex items-start gap-3">
+                    <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                    <div>
+                      <p className="font-medium text-card-foreground">Location</p>
+                      <p className="text-muted-foreground">{event.location}</p>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="flex items-start gap-3">
-                <CalendarDays className="mt-0.5 h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Date & time</p>
-                  <p className="text-sm text-muted-foreground">
-                    {event.date}, {event.time}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <MapPin className="mt-0.5 h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Location</p>
-                  <p className="text-sm text-muted-foreground">{event.location}</p>
-                </div>
+              <div className="mt-6 space-y-3">
+                {event.eventDateTime && (
+                  <ClientAddToCalendarButton 
+                    name={event.title}
+                    startDate={getCalendarDate(event.eventDateTime)}
+                    startTime={getCalendarTime(event.eventDateTime)}
+                    endDate={getCalendarDate(event.eventEndDateTime || event.eventDateTime)}
+                    endTime={getCalendarTime(event.eventEndDateTime || event.eventDateTime)}
+                    location={event.location || undefined}
+                    description={event.description || undefined}
+                    timeZone={timeZone}
+                  />
+                )}
+                {event.contactEmail && (
+                  <Button variant="outline" className="w-full hover:bg-accentHover asChild">
+                    <Link href={`mailto:${event.contactEmail}`} className="flex w-full items-center justify-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Contact Organiser
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
 
-            <div className="space-y-4">
-              <Button className="w-full hover:bg-primary/90">Add to calendar</Button>
-              <Button variant="outline" className="w-full hover:bg-accentHover">
-                <Link href="/contact" className="flex w-full items-center justify-center">
-                  Contact organiser
-                </Link>
-              </Button>
-            </div>
+            {event.eventDateTime && (
+              <div className="rounded-xl border bg-card p-6 shadow-sm">
+                <h2 className="mb-4 text-xl font-semibold text-card-foreground text-center">Countdown to Event</h2>
+                <Countdown targetIsoDate={event.eventDateTime} />
+              </div>
+            )}
           </div>
-        </div>
+        </aside>
       </div>
     </div>
-  )
+  );
 }

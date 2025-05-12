@@ -36,7 +36,6 @@ export const eventType = defineType({
       },
       validation: (Rule) => Rule.required().error('Event date and start time are required.'),
     }),
-    // --- NEW FIELD ADDED HERE ---
     defineField({
       name: 'eventEndDateTime',
       title: 'Event End Date and Time (Optional)',
@@ -48,9 +47,7 @@ export const eventType = defineType({
         timeStep: 15,
         calendarTodayLabel: 'Today'
       },
-      // No validation: Rule.required() making it optional
     }),
-    // --- END OF NEW FIELD ---
     defineField({
       name: 'timeDisplay',
       title: 'Time Display (e.g., 12:00 PM - 6:00 PM)',
@@ -151,21 +148,30 @@ export const eventType = defineType({
               description: 'E.g., "Music", "Utensils", "Users", "CalendarDays". You will map this to the Lucide icon component in your frontend code.',
             }),
             defineField({
-              name: 'text',
-              title: 'Feature Text',
+              name: 'title', // Changed from 'text' to 'title'
+              title: 'Title', // Updated label
               type: 'string',
+              description: 'Short title for the feature (e.g., Live Music, Food Stalls).', // Added description
               validation: (Rule) => Rule.required(),
+            }),
+            defineField({ // Added new description field for the feature
+              name: 'description',
+              title: 'Description',
+              type: 'string', // Or 'text' for a textarea
+              description: 'Optional: Further details about this feature (e.g., specifics about the music, types of food).',
             }),
           ],
           preview: {
             select: {
-              title: 'text',
+              title: 'title', // Updated to use the new 'title' field
               subtitle: 'iconName',
+              description: 'description' // Can also show the new description in preview
             },
-            prepare({ title, subtitle }) {
+            prepare({ title, subtitle, description }) {
               return {
-                title: title || 'No text',
+                title: title || 'No title',
                 subtitle: subtitle ? `Icon: ${subtitle}` : 'No icon specified',
+                description: description // Display the feature's description in the preview if available
               }
             }
           }
