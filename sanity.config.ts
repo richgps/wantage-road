@@ -8,6 +8,9 @@ import {visionTool} from '@sanity/vision'
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import WantageLogo from './src/components/wantageLogo.jsx'
+import { presentationTool } from 'sanity/presentation'
+import { resolve } from '@/sanity/presentation/resolve'
+
 
 
 // Go to https://www.sanity.io/docs/api-versioning to learn how API versioning works
@@ -31,5 +34,13 @@ export default defineConfig({
     // Vision is for querying with GROQ from inside the Studio
     // https://www.sanity.io/docs/the-vision-plugin
     visionTool({defaultApiVersion: apiVersion}),
+    presentationTool({
+      resolve,
+      previewUrl: {
+        previewMode: {
+          enable: '/api/draft-mode/enable',
+        },
+      },
+    }),
   ],
 })

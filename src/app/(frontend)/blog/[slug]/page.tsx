@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, User, Share2, ArrowLeft } from "lucide-react"; 
-import { client } from '@/sanity/lib/client';
+import { sanityFetch } from '@/sanity/lib/live';
 import { urlFor } from '@/sanity/lib/image';
 import { BlogPortableText } from '@/components/portable-text';
 
@@ -10,22 +10,27 @@ import { BlogPortableText } from '@/components/portable-text';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 
 // Updated function signature and params handling
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const { slug } = params; // Directly access slug
+import { draftMode } from 'next/headers';
 
-  const post = await client.fetch(
-    `*[_type == "post" && slug.current == $slug][0]{
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const { slug } = await params;
+  const { isEnabled } = await draftMode();
+
+  const postData = await sanityFetch<{ data: any }>({
+    query: `*[_type == "post" && slug.current == $slug][0]{
       _id,
       title,
       slug,
-      publishedAt, // Ensure this is a valid ISO 8601 string from Sanity
+      publishedAt,
       mainImage,
       body,
       "author": author->{name, title, image, bio},
       "categories": categories[]->{_id, title, slug, description}
     }`,
-    { slug }
-  );
+    params: { slug },
+    perspective: isEnabled ? 'previewDrafts' : 'published',
+  });
+  const post = postData.data;
 
   // Compute relative time string
   let displayTimeAgo = 'Date unavailable';

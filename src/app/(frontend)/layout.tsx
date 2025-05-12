@@ -1,4 +1,7 @@
 // src/app/(frontend)/layout.tsx
+import { draftMode } from "next/headers";
+import { VisualEditing } from "next-sanity";
+import { DisableDraftMode } from "@/components/DisableDraftMode";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
@@ -23,7 +26,7 @@ export const metadata: Metadata = {
   description: "Community website for Wantage Road in Reading, UK",
 };
 
-export default function MainLayout({
+export default async function MainLayout({
   children,
 }: {
   children: ReactNode;
@@ -43,7 +46,13 @@ export default function MainLayout({
           <Navbar />
           <main className="flex-1">
             {children}
-            <SanityLive /> {/* Restore SanityLive */}
+            <SanityLive />
+            {(await draftMode()).isEnabled && (
+              <>
+                <DisableDraftMode />
+                <VisualEditing />
+              </>
+            )}
           </main>
           <Footer />
         </div>
