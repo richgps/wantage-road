@@ -16,12 +16,34 @@ import { urlFor } from '@/sanity/lib/image';
  * ------------------------------------------------------------------------- */
 function InlineImage({ value }: { value: any }) {
   const [open, setOpen] = useState(false);
+  const [transformRef, setTransformRef] = useState<any>(null);
 
   /* freeze background scroll while light-box is open */
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
     return () => (document.body.style.overflow = '');
   }, [open]);
+
+  /* handle screen rotation - recenter and refit image */
+  useEffect(() => {
+    if (!open || !transformRef) return;
+
+    const handleResize = () => {
+      // Small delay to ensure viewport dimensions are updated
+      setTimeout(() => {
+        transformRef.resetTransform();
+        transformRef.centerView();
+      }, 150);
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, [open, transformRef]);
 
   const full  = urlFor(value).url();            // original asset
   const small = urlFor(value).width(1200).url(); // inline variant
@@ -60,28 +82,42 @@ function InlineImage({ value }: { value: any }) {
             <TransformWrapper
               initialScale={1}
               minScale={0.1}
-              maxScale={4}
+              maxScale={8}
               centerOnInit={true}
               wheel={{ step: 0.15 }}
               limitToBounds={true}
+              onInit={(ref) => setTransformRef(ref)}
             >
               <TransformComponent wrapperClass="w-full h-full">
-                <div className="w-full h-full flex items-center justify-center">
+                <div className="w-full h-full flex items-center justify-center p-4">
                   <img
                     src={full}
                     alt={alt}
                     draggable={false}
-                    className="w-auto h-auto max-w-[95vw] max-h-[95vh] object-contain select-none"
+                    className="select-none"
+                    style={{
+                      maxWidth: 'calc(100vw - 2rem)',
+                      maxHeight: 'calc(100vh - 2rem)',
+                      width: 'auto',
+                      height: 'auto',
+                      objectFit: 'contain'
+                    }}
                   />
                 </div>
               </TransformComponent>
             </TransformWrapper>
 
-            {/* close button */}
+            {/* close button - positioned to always be visible */}
             <button
               onClick={() => setOpen(false)}
-              className="absolute top-4 right-4 z-50 p-2 rounded-full
-                         bg-black/60 text-white hover:bg-black focus:outline-none"
+              className="fixed top-4 right-4 z-[60] p-3 rounded-full
+                         bg-black/70 text-white hover:bg-black focus:outline-none
+                         shadow-lg backdrop-blur-sm"
+              style={{ 
+                position: 'fixed',
+                top: 'max(16px, env(safe-area-inset-top, 16px))',
+                right: 'max(16px, env(safe-area-inset-right, 16px))'
+              }}
               aria-label="Close full-screen image"
             >
               <X className="w-6 h-6" />
