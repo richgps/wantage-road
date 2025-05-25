@@ -11,7 +11,7 @@ const nextConfig = {
   },
   // Move allowedDevOrigins to the top level
   allowedDevOrigins: [
-    "https://3000-firebase-wantage-road-1746877318206.cluster-c3a7z3wnwzapkx3rfr5kz62dac.cloudworkstations.dev",
+    "3001-firebase-wantage-road-1748166658344.cluster-jbb3mjctu5cbgsi6hwq6u4btwe.cloudworkstations.dev",
   ],
 };
 
