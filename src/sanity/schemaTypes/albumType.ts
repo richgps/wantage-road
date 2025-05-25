@@ -24,6 +24,12 @@ export const albumType = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'albumDate',
+      title: 'Album Date',
+      type: 'date',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: 'description',
       title: 'Description',
       type: 'text',

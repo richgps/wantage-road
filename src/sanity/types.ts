@@ -87,6 +87,7 @@ export type Album = {
   _rev: string;
   title?: string;
   slug?: Slug;
+  albumDate?: string;
   description?: string;
   images?: Array<{
     asset?: {

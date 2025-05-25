@@ -2,24 +2,32 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { CalendarDays } from "lucide-react"
+import { CalendarDays } from "lucide-react";
+import createImageUrlBuilder from '@sanity/image-url';
+import { client } from '@/sanity/lib/client'; // Assuming your client is exported from this path
 import PhotoViewer from "./photo-viewer"
+import { type Image as SanityImage } from 'sanity'; // Import Sanity's Image type
 
-interface Photo {
-  src: string
-  alt: string
+interface SanityPhoto extends SanityImage {
+  caption?: string;
+  alt?: string;
+  description?: string;
 }
 
-interface PhotoCollectionProps {
+interface PhotoAlbumProps {
   title: string
-  date: string
-  description: string
-  photos: Photo[]
+  albumDate: string // Changed from 'date' to 'albumDate' to match schema
+  description?: string // Made optional as per schema
+  images?: SanityPhoto[] // Use SanityPhoto array
   link?: string
   linkType?: "blog" | "event"
 }
 
-export default function PhotoCollection({ title, date, description, photos, link, linkType }: PhotoCollectionProps) {
+export default function PhotoAlbum({ title, albumDate, description, images: photos, link, linkType }: PhotoAlbumProps) {
+  // Add a check to ensure photos is an array before proceeding
+  if (!Array.isArray(photos) || photos.length === 0) {
+    return null; // Or return <div />; depending on desired behavior for albums with no photos
+  }
   const [viewerOpen, setViewerOpen] = useState(false)
   const [initialPhotoIndex, setInitialPhotoIndex] = useState(0)
 
@@ -28,16 +36,23 @@ export default function PhotoCollection({ title, date, description, photos, link
     setViewerOpen(true)
   }
 
+  // Create image URL builder instance
+  const builder = createImageUrlBuilder(client);
+
+  function urlFor(source: SanityPhoto) {
+    return builder.image(source);
+  }
+
   // Determine how many photos to show in the grid (max 5)
-  const displayPhotos = photos.slice(0, Math.min(5, photos.length))
-  const remainingCount = photos.length - displayPhotos.length
+  const displayPhotos = photos.slice(0, Math.min(5, photos.length));
+  const remainingCount = photos.length - displayPhotos.length;
 
   return (
     <div className="mb-6 overflow-hidden rounded-xl border bg-card shadow-sm">
       <div className="p-4">
         <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
           <CalendarDays className="h-4 w-4" />
-          <span>{date}</span>
+          <span>{albumDate}</span> {}
         </div>
         <h2 className="mb-2 text-xl font-bold">{title}</h2>
         <p className="mb-4 text-sm text-muted-foreground line-clamp-2">{description}</p>
@@ -51,8 +66,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(0)}
             >
               <Image
-                src={displayPhotos[0].src || "/placeholder.svg"}
-                alt={displayPhotos[0].alt}
+                src={urlFor(displayPhotos[0]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[0].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -62,8 +77,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(1)}
             >
               <Image
-                src={displayPhotos[1].src || "/placeholder.svg"}
-                alt={displayPhotos[1].alt}
+                src={urlFor(displayPhotos[1]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[1].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -78,8 +93,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(0)}
             >
               <Image
-                src={displayPhotos[0].src || "/placeholder.svg"}
-                alt={displayPhotos[0].alt}
+                src={urlFor(displayPhotos[0]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[0].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -89,8 +104,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(1)}
             >
               <Image
-                src={displayPhotos[1].src || "/placeholder.svg"}
-                alt={displayPhotos[1].alt}
+                src={urlFor(displayPhotos[1]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[1].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -100,8 +115,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(2)}
             >
               <Image
-                src={displayPhotos[2].src || "/placeholder.svg"}
-                alt={displayPhotos[2].alt}
+                src={urlFor(displayPhotos[2]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[2].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -116,8 +131,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(0)}
             >
               <Image
-                src={displayPhotos[0].src || "/placeholder.svg"}
-                alt={displayPhotos[0].alt}
+                src={urlFor(displayPhotos[0]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[0].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -127,8 +142,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(1)}
             >
               <Image
-                src={displayPhotos[1].src || "/placeholder.svg"}
-                alt={displayPhotos[1].alt}
+                src={urlFor(displayPhotos[1]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[1].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -138,8 +153,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(2)}
             >
               <Image
-                src={displayPhotos[2].src || "/placeholder.svg"}
-                alt={displayPhotos[2].alt}
+                src={urlFor(displayPhotos[2]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[2].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -154,8 +169,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(0)}
             >
               <Image
-                src={displayPhotos[0].src || "/placeholder.svg"}
-                alt={displayPhotos[0].alt}
+                src={urlFor(displayPhotos[0]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[0].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -165,8 +180,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(1)}
             >
               <Image
-                src={displayPhotos[1].src || "/placeholder.svg"}
-                alt={displayPhotos[1].alt}
+                src={urlFor(displayPhotos[1]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[1].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -176,8 +191,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(2)}
             >
               <Image
-                src={displayPhotos[2].src || "/placeholder.svg"}
-                alt={displayPhotos[2].alt}
+                src={urlFor(displayPhotos[2]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[2].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -187,8 +202,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(3)}
             >
               <Image
-                src={displayPhotos[3].src || "/placeholder.svg"}
-                alt={displayPhotos[3].alt}
+                src={urlFor(displayPhotos[3]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[3].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -198,8 +213,8 @@ export default function PhotoCollection({ title, date, description, photos, link
               onClick={() => openViewer(4)}
             >
               <Image
-                src={displayPhotos[4].src || "/placeholder.svg"}
-                alt={displayPhotos[4].alt}
+                src={urlFor(displayPhotos[4]).width(300).url() || "/placeholder.svg"}
+                alt={displayPhotos[4].alt || ""}
                 fill
                 className="object-cover"
               />
@@ -215,7 +230,7 @@ export default function PhotoCollection({ title, date, description, photos, link
 
       {viewerOpen && (
         <PhotoViewer
-          photos={photos}
+          photos={photos} // Pass the original images array to PhotoViewer
           initialIndex={initialPhotoIndex}
           onClose={() => setViewerOpen(false)}
           title={title}
