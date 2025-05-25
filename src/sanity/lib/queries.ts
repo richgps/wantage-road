@@ -57,3 +57,20 @@ export const EVENT_BY_SLUG_QUERY = defineQuery(`
     // Add any other fields needed for the event details page
   }
 `);
+
+export const GALLERY_ALBUMS_QUERY = `*[_type == "album"] {
+  _id,
+  title,
+  slug,
+  description,
+  albumDate,
+  images[]{
+    _key,
+    asset->{url},
+    hotspot,
+    crop,
+    caption,
+    alt,
+    description
+  }
+}`;

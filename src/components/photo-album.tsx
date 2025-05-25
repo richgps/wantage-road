@@ -7,6 +7,7 @@ import createImageUrlBuilder from '@sanity/image-url';
 import { client } from '@/sanity/lib/client'; // Assuming your client is exported from this path
 import PhotoViewer from "./photo-viewer"
 import { type Image as SanityImage } from 'sanity'; // Import Sanity's Image type
+import { formatEventDate } from "@/lib/date-utils";
 
 interface SanityPhoto extends SanityImage {
   caption?: string;
@@ -52,7 +53,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
       <div className="p-4">
         <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
           <CalendarDays className="h-4 w-4" />
-          <span>{albumDate}</span> {}
+          <span>{formatEventDate(albumDate)}</span> {}
         </div>
         <h2 className="mb-2 text-xl font-bold">{title}</h2>
         <p className="mb-4 text-sm text-muted-foreground line-clamp-2">{description}</p>

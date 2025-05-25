@@ -7,6 +7,7 @@ import { CalendarDays, Clock, MapPin } from "lucide-react";
 import { urlFor } from "@/sanity/lib/image";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { format as formatDateFns, isSameDay } from 'date-fns';
+import { formatEventDate } from "@/lib/date-utils";
 import { toZonedTime } from 'date-fns-tz'; // Corrected import
 
 export interface RawSanityEventProps {
@@ -28,22 +29,6 @@ interface EventCardProps {
 }
 
 const timeZone = 'Europe/London';
-
-// Helper function to format a single date string into a readable date (e.g., 5 July 2024)
-function formatEventDate(isoString?: string): string {
-  if (!isoString) return "Date TBD";
-  try {
-    const date = new Date(isoString);
-    // The toZonedTime function expects the date and the target timeZone.
-    // The original date object is assumed to be UTC if it's an ISO string, 
-    // or it might be local if created differently. New Date(isoString) typically parses as UTC.
-    const zonedDate = toZonedTime(date, timeZone);
-    return formatDateFns(zonedDate, 'd MMMM yyyy'); // No need to pass timeZone to formatDateFns if zonedDate is already correct
-  } catch (error) {
-    console.error("Error formatting date with date-fns:", error, "Input:", isoString);
-    return "Invalid Date";
-  }
-}
 
 // Helper function to format time (e.g., 12:00 pm)
 function formatTime(isoString?: string): string {
