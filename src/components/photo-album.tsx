@@ -1,11 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { CalendarDays } from "lucide-react";
 import createImageUrlBuilder from '@sanity/image-url';
 import { client } from '@/sanity/lib/client'; // Assuming your client is exported from this path
-import PhotoViewer from "./photo-viewer"
 import { type Image as SanityImage } from 'sanity'; // Import Sanity's Image type
 import { formatEventDate } from "@/lib/date-utils";
 
@@ -17,24 +16,19 @@ interface SanityPhoto extends SanityImage {
 
 interface PhotoAlbumProps {
   title: string
+  slug: string
   albumDate: string // Changed from 'date' to 'albumDate' to match schema
   description?: string // Made optional as per schema
   images?: SanityPhoto[] // Use SanityPhoto array
 }
 
-export default function PhotoAlbum({ title, albumDate, description, images: photos }: PhotoAlbumProps) {
-  const [viewerOpen, setViewerOpen] = useState(false)
-  const [initialPhotoIndex, setInitialPhotoIndex] = useState(0)
+export default function PhotoAlbum({ title, slug, albumDate, description, images: photos }: PhotoAlbumProps) {
 
   // Add a check to ensure photos is an array before proceeding
   if (!Array.isArray(photos) || photos.length === 0) {
     return null // Or return <div />; depending on desired behavior for albums with no photos
   }
 
-  const openViewer = (index: number) => {
-    setInitialPhotoIndex(index)
-    setViewerOpen(true)
-  }
 
   // Create image URL builder instance
   const builder = createImageUrlBuilder(client);
@@ -47,12 +41,14 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
   const displayPhotos = photos.slice(0, Math.min(5, photos.length));
   const remainingCount = photos.length - displayPhotos.length;
 
+  const albumUrl = `/gallery/${slug}`;
+
   return (
-    <div className="mb-6 overflow-hidden rounded-xl border bg-card shadow-sm">
+    <Link href={albumUrl} className="block mb-6 overflow-hidden rounded-xl border bg-card shadow-sm">
       <div className="p-4">
         <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
           <CalendarDays className="h-4 w-4" />
-          <span>{formatEventDate(albumDate)}</span> {}
+          <span>{formatEventDate(albumDate)}</span>
         </div>
         <h2 className="mb-2 text-xl font-bold">{title}</h2>
         <p className="mb-4 text-sm text-muted-foreground line-clamp-2">{description}</p>
@@ -62,8 +58,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
         {displayPhotos.length === 2 && (
           <>
             <div
-              className="col-span-2 row-span-2 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(0)}
+              className="col-span-2 row-span-2 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[0]).width(300).url() || "/placeholder.svg"}
@@ -73,8 +68,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
               />
             </div>
             <div
-              className="col-span-1 row-span-2 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(1)}
+              className="col-span-1 row-span-2 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[1]).width(300).url() || "/placeholder.svg"}
@@ -89,8 +83,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
         {displayPhotos.length === 3 && (
           <>
             <div
-              className="col-span-3 row-span-1 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(0)}
+              className="col-span-3 row-span-1 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[0]).width(300).url() || "/placeholder.svg"}
@@ -100,8 +93,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
               />
             </div>
             <div
-              className="col-span-1 row-span-1 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(1)}
+              className="col-span-1 row-span-1 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[1]).width(300).url() || "/placeholder.svg"}
@@ -111,8 +103,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
               />
             </div>
             <div
-              className="col-span-2 row-span-1 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(2)}
+              className="col-span-2 row-span-1 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[2]).width(300).url() || "/placeholder.svg"}
@@ -127,8 +118,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
         {displayPhotos.length === 4 && (
           <>
             <div
-              className="col-span-2 row-span-2 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(0)}
+              className="col-span-2 row-span-2 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[0]).width(300).url() || "/placeholder.svg"}
@@ -138,8 +128,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
               />
             </div>
             <div
-              className="col-span-1 row-span-1 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(1)}
+              className="col-span-1 row-span-1 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[1]).width(300).url() || "/placeholder.svg"}
@@ -149,8 +138,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
               />
             </div>
             <div
-              className="col-span-1 row-span-1 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(2)}
+              className="col-span-1 row-span-1 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[2]).width(300).url() || "/placeholder.svg"}
@@ -165,8 +153,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
         {displayPhotos.length >= 5 && (
           <>
             <div
-              className="col-span-2 row-span-1 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(0)}
+              className="col-span-2 row-span-1 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[0]).width(300).url() || "/placeholder.svg"}
@@ -176,8 +163,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
               />
             </div>
             <div
-              className="col-span-1 row-span-1 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(1)}
+              className="col-span-1 row-span-1 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[1]).width(300).url() || "/placeholder.svg"}
@@ -187,8 +173,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
               />
             </div>
             <div
-              className="col-span-1 row-span-1 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(2)}
+              className="col-span-1 row-span-1 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[2]).width(300).url() || "/placeholder.svg"}
@@ -198,8 +183,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
               />
             </div>
             <div
-              className="col-span-1 row-span-1 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(3)}
+              className="col-span-1 row-span-1 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[3]).width(300).url() || "/placeholder.svg"}
@@ -209,8 +193,7 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
               />
             </div>
             <div
-              className="col-span-1 row-span-1 relative cursor-pointer overflow-hidden"
-              onClick={() => openViewer(4)}
+              className="col-span-1 row-span-1 relative overflow-hidden"
             >
               <Image
                 src={urlFor(displayPhotos[4]).width(300).url() || "/placeholder.svg"}
@@ -228,14 +211,6 @@ export default function PhotoAlbum({ title, albumDate, description, images: phot
         )}
       </div>
 
-      {viewerOpen && (
-        <PhotoViewer
-          photos={photos} // Pass the original images array to PhotoViewer
-          initialIndex={initialPhotoIndex}
-          onClose={() => setViewerOpen(false)}
-          title={title}
-        />
-      )}
-    </div>
+    </Link>
   )
 }

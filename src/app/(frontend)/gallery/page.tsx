@@ -25,6 +25,7 @@ export default async function GalleryPage() {
           <PhotoAlbum
             key={album._id}
             title={album.title}
+            slug={album.slug}
             albumDate={album.albumDate}
             description={album.description}
             images={album.images}

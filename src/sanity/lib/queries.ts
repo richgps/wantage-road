@@ -61,7 +61,24 @@ export const EVENT_BY_SLUG_QUERY = defineQuery(`
 export const GALLERY_ALBUMS_QUERY = `*[_type == "album"] {
   _id,
   title,
-  slug,
+  "slug": slug.current,
+  description,
+  albumDate,
+  images[]{
+    _key,
+    asset->{url},
+    hotspot,
+    crop,
+    caption,
+    alt,
+    description
+  }
+}`;
+
+export const ALBUM_BY_SLUG_QUERY = `*[_type == "album" && slug.current == $slug][0]{
+  _id,
+  title,
+  "slug": slug.current,
   description,
   albumDate,
   images[]{
