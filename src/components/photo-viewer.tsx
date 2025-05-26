@@ -17,14 +17,13 @@ interface PhotoViewerProps {
   photos: SanityPhoto[];
   initialIndex: number;
   onClose: () => void;
-  title?: string; // album title
+  title?: string; // album title (unused for now)
 }
 
 export default function PhotoViewer({
   photos,
   initialIndex,
   onClose,
-  title,
 }: PhotoViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isLoading, setIsLoading] = useState(true);

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays } from "lucide-react";
 import { urlFor } from "@/sanity/lib/image";
 import { BlogPortableText } from "@/components/portable-text";
+import { type Image as SanityImage } from "sanity";
 
 // Import from date-fns
 import { format as formatDateFnsAlias, formatDistanceToNow, parseISO } from 'date-fns'; // Aliased format for clarity
@@ -15,8 +16,8 @@ type BlogItem = {
   _id: string;
   title: string;
   publishedAt: string; // Expecting ISO 8601 date string from Sanity
-  mainImage?: any;
-  body?: any[];
+  mainImage?: SanityImage;
+  body?: unknown[];
   slug?: { current: string };
 };
 
@@ -53,7 +54,11 @@ export function BlogCard({ post, variant = 'default', className }: BlogCardProps
   }
 
   const imageUrl = post.mainImage
-    ? urlFor(post.mainImage).width(isFeatured ? 800 : 400).height(isFeatured ? (isFeatured ? 450 : 225) : 300).fit('crop').url()
+    ? urlFor(post.mainImage)
+        .width(isFeatured ? 800 : 400)
+        .height(isFeatured ? 450 : 300)
+        .fit("crop")
+        .url()
     : "/images/placeholder.jpg";
 
   const BlogImageContent = (
