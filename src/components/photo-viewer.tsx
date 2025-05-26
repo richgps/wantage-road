@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import createImageUrlBuilder from "@sanity/image-url";
@@ -27,6 +27,7 @@ export default function PhotoViewer({
 }: PhotoViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isLoading, setIsLoading] = useState(true);
+  const touchStartX = useRef<number | null>(null);
 
   const builder = createImageUrlBuilder(client);
   function urlFor(source: SanityPhoto) {
@@ -61,13 +62,33 @@ export default function PhotoViewer({
   }, []);
 
   useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX.current = e.touches[0].clientX;
+    };
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (touchStartX.current === null) return;
+      const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+      if (Math.abs(deltaX) > 50) {
+        if (deltaX > 0) navigatePrev();
+        else navigateNext();
+      }
+    };
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchend", handleTouchEnd);
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [navigatePrev, navigateNext]);
+
+  useEffect(() => {
     setIsLoading(true);
   }, [currentIndex]);
 
   const currentPhoto = photos[currentIndex];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black">
       {/* Close */}
       <button
         aria-label="Close photo viewer"
@@ -77,12 +98,6 @@ export default function PhotoViewer({
         <X className="h-6 w-6" />
       </button>
 
-      {/* Counter */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[110] text-white">
-        <p className="text-sm text-center text-gray-300">
-          {currentIndex + 1} of {photos.length}
-        </p>
-      </div>
 
       {/* Navigation */}
       <button
@@ -115,20 +130,20 @@ export default function PhotoViewer({
             onLoad={() => setIsLoading(false)}
           />
 
-          {/* Caption & Description band */}
-          {(currentPhoto.caption || currentPhoto.description) && (
-            <div className="absolute bottom-0 left-0 w-full bg-black/60 p-4 text-white backdrop-blur-sm">
-              {currentPhoto.caption && (
-                <h3 className="text-lg font-semibold mb-1">
-                  {currentPhoto.caption}
-                </h3>
-              )}
-              {currentPhoto.description && (
-                <p className="text-sm">{currentPhoto.description}</p>
-              )}
-            </div>
-          )}
         </div>
+      </div>
+
+      {/* Info below image */}
+      <div className="mt-4 text-center text-white">
+        <p className="text-sm mb-1 text-gray-300">
+          {currentIndex + 1} of {photos.length}
+        </p>
+        {currentPhoto.caption && (
+          <h3 className="text-lg font-semibold">{currentPhoto.caption}</h3>
+        )}
+        {currentPhoto.description && (
+          <p className="text-sm mt-1">{currentPhoto.description}</p>
+        )}
       </div>
     </div>
   );
