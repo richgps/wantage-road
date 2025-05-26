@@ -20,17 +20,16 @@ interface PhotoAlbumProps {
   albumDate: string // Changed from 'date' to 'albumDate' to match schema
   description?: string // Made optional as per schema
   images?: SanityPhoto[] // Use SanityPhoto array
-  link?: string
-  linkType?: "blog" | "event"
 }
 
-export default function PhotoAlbum({ title, albumDate, description, images: photos, link, linkType }: PhotoAlbumProps) {
-  // Add a check to ensure photos is an array before proceeding
-  if (!Array.isArray(photos) || photos.length === 0) {
-    return null; // Or return <div />; depending on desired behavior for albums with no photos
-  }
+export default function PhotoAlbum({ title, albumDate, description, images: photos }: PhotoAlbumProps) {
   const [viewerOpen, setViewerOpen] = useState(false)
   const [initialPhotoIndex, setInitialPhotoIndex] = useState(0)
+
+  // Add a check to ensure photos is an array before proceeding
+  if (!Array.isArray(photos) || photos.length === 0) {
+    return null // Or return <div />; depending on desired behavior for albums with no photos
+  }
 
   const openViewer = (index: number) => {
     setInitialPhotoIndex(index)

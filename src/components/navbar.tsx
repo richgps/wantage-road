@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes"; // Keep this import
@@ -11,7 +10,7 @@ import WantageLogo from '@/components/wantageLogo.jsx'; // Changed import for de
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // Get theme and setTheme from useTheme
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
 
   // Close menu when resizing to desktop
   useEffect(() => {
