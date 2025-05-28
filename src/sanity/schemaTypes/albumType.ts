@@ -43,22 +43,10 @@ export const albumType = defineType({
           type: 'image',
           fields: [
             defineField({
-              name: 'caption',
-              title: 'Caption',
-              type: 'string',
-              description: 'Caption for the image',
-            }),
-            defineField({
               name: 'alt',
               title: 'Alt Text',
               type: 'string',
               description: 'Alternative text for accessibility',
-            }),
-            defineField({
-              name: 'description',
-              title: 'Image Description',
-              type: 'text',
-              description: 'Detailed description of the image',
             }),
           ],
         }),
