@@ -99,9 +99,7 @@ export type Album = {
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
-    caption?: string;
     alt?: string;
-    description?: string;
     _type: "image";
     _key: string;
   }>;

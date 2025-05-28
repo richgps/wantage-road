@@ -9,9 +9,7 @@ import { type Image as SanityImage } from 'sanity'; // Import Sanity's Image typ
 import { formatEventDate } from "@/lib/date-utils";
 
 interface SanityPhoto extends SanityImage {
-  caption?: string;
   alt?: string;
-  description?: string;
 }
 
 interface PhotoAlbumProps {

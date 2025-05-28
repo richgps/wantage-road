@@ -508,21 +508,7 @@
                 },
                 "optional": true
               },
-              "caption": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "string"
-                },
-                "optional": true
-              },
               "alt": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "string"
-                },
-                "optional": true
-              },
-              "description": {
                 "type": "objectAttribute",
                 "value": {
                   "type": "string"
@@ -1013,13 +999,6 @@
                 "value": {
                   "type": "inline",
                   "name": "sanity.imageCrop"
-                },
-                "optional": true
-              },
-              "caption": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "string"
                 },
                 "optional": true
               },
