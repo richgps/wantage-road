@@ -16,5 +16,10 @@ export default async function AlbumPage({ params }: { params: { slug: string } }
     notFound();
   }
 
-  return <AlbumViewer photos={album.images || []} title={album.title} />;
+  return (
+    <div className="container py-12">
+      <h1 className="mb-6 text-3xl font-bold">{album.title}</h1>
+      <AlbumViewer photos={album.images || []} />
+    </div>
+  );
 }
