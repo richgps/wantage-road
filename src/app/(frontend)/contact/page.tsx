@@ -20,27 +20,38 @@ export default function ContactPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormState((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setErrorMessage("")
 
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false)
-      setIsSubmitted(true)
-      setFormState({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formState),
       })
-    }, 1500)
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Request failed")
+      }
+
+      setIsSubmitted(true)
+      setFormState({ name: "", email: "", subject: "", message: "" })
+    } catch (err) {
+      console.error(err)
+      setErrorMessage("Failed to send message. Please try again later.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -81,7 +92,7 @@ export default function ContactPage() {
               <CardDescription>Ways to participate in our community</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">We're always looking for volunteers to help with:</p>
+              <p className="text-sm text-muted-foreground">We&apos;re always looking for volunteers to help with:</p>
               <ul className="list-inside list-disc space-y-2 text-sm text-muted-foreground">
                 <li>Organising community events</li>
                 <li>Contributing to the Wantage Road in Bloom initiative</li>
@@ -100,7 +111,7 @@ export default function ContactPage() {
           <CardContent>
             {isSubmitted ? (
               <div className="rounded-lg bg-green-50 p-4 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                <p className="text-center font-medium">Thank you for your message! We'll get back to you soon.</p>
+                <p className="text-center font-medium">Thank you for your message! We&apos;ll get back to you soon.</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -134,6 +145,9 @@ export default function ContactPage() {
                     required
                   />
                 </div>
+                {errorMessage && (
+                  <p className="text-sm text-red-500">{errorMessage}</p>
+                )}
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? "Sending..." : "Send message"}
                 </Button>
