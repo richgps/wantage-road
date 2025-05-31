@@ -1,3 +1,5 @@
+export const revalidate = 60; // ← Next.js will re-generate the page in the background every 60 seconds
+
 import { client } from '@/sanity/lib/client';
 import type { SanityDocument } from 'next-sanity';
 
