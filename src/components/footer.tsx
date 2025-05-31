@@ -134,8 +134,8 @@ const Footer = () => {
 
           <div>
             <div className="flex gap-4">
-              <SocialButton href="#" src="/icons/facebook.svg" alt="Facebook" sparksColor="#1877F2" />
-              <SocialButton href="#" src="/icons/whatsapp.svg" alt="WhatsApp" sparksColor="#25D366" />
+              <SocialButton href="https://www.facebook.com/groups/104573560382966" src="/icons/facebook.svg" alt="Facebook" sparksColor="#1877F2" />
+              {/*  <SocialButton href="#" src="/icons/whatsapp.svg" alt="WhatsApp" sparksColor="#25D366" />*/}
             </div>
           </div>
         </div>

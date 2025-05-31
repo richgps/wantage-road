@@ -24,7 +24,7 @@ export const LATEST_EVENT_QUERY = defineQuery(`
 `);
 
 export const ALL_EVENTS_QUERY = defineQuery(`
-  *[_type == "event" && defined(slug.current) && eventDateTime >= now()] | order(eventDateTime asc){
+  *[_type == "event" && defined(slug.current)] | order(eventDateTime asc){
     _id,
     title,
     "slug": slug.current,

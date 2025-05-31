@@ -121,62 +121,7 @@ export default async function Home() {
           )}
         </div>
       </section>
-
-      {/* Photo Gallery Preview */}
-      <section className="bg-muted/30 py-16">
-        <div className="container">
-          <div className="mb-10 text-center">
-            <h2 className="mb-2 text-3xl font-bold md:text-4xl">Community moments</h2>
-            <p className="mx-auto max-w-2xl text-muted-foreground">Memories from our past events and gatherings</p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            <Card className="overflow-hidden">
-              <CardContent className="p-0">
-                <div className="relative aspect-square">
-                  <Image
-                    src="/images/street-party-1.png"
-                    alt="Street Party"
-                    fill
-                    className="object-cover transition-transform hover:scale-105"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="overflow-hidden">
-              <CardContent className="p-0">
-                <div className="relative aspect-square">
-                  <Image
-                    src="/images/street-party-2.png"
-                    alt="Community Gathering"
-                    fill
-                    className="object-cover transition-transform hover:scale-105"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="overflow-hidden">
-              <CardContent className="p-0">
-                <div className="relative aspect-square">
-                  <Image
-                    src="/images/street-party-3.png"
-                    alt="Music Performance"
-                    fill
-                    className="object-cover transition-transform hover:scale-105"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          <div className="mt-8 text-center">
-            <Button asChild variant="outline" className="hover:bg-[rgb(235,235,235)] dark:hover:bg-gray-800">
-              <Link href="/gallery" className="flex items-center gap-2">
-                <Camera className="h-4 w-4" />
-                <span>View full gallery</span>
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Contact CTA */}
       <section className="py-16">
