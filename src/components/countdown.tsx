@@ -35,6 +35,8 @@ const Countdown: React.FC<CountdownProps> = ({ targetIsoDate, onComplete }) => {
       return;
     }
 
+    let interval: NodeJS.Timeout;
+
     const calculate = () => {
       const now = new Date().getTime();
       const distance = targetTime - now;
@@ -43,10 +45,10 @@ const Countdown: React.FC<CountdownProps> = ({ targetIsoDate, onComplete }) => {
         setTimeLeft(null);
         setEventHasStarted(true);
         if (onComplete) onComplete();
-        clearInterval(interval);
+        clearInterval(interval); // ✅ this is now safe
         return;
       }
-      
+
       setEventHasStarted(false);
       setTimeLeft({
         days: String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, "0"),
@@ -58,10 +60,11 @@ const Countdown: React.FC<CountdownProps> = ({ targetIsoDate, onComplete }) => {
     };
 
     calculate();
-    const interval = setInterval(calculate, 1000);
+    interval = setInterval(calculate, 1000);
 
     return () => clearInterval(interval);
   }, [targetIsoDate, onComplete]);
+
 
   if (isLoading) {
     return <div className="text-center text-xs text-muted-foreground py-3">Loading...</div>;
