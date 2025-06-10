@@ -1,6 +1,6 @@
 # Wantage Road
 
-A modern web application built with Next.js and TypeScript, styled with Tailwind CSS and Shadcn UI
+A modern web application built with Next.js and TypeScript, styled with Tailwind CSS and Shadcn UI. Content is managed via Sanity, with Sanity Studio embedded directly into the app for seamless, structured content editing.
 
 ---
 
@@ -12,6 +12,7 @@ This repository contains the source code for the Wantage Road community
 - **Styling:** Tailwind CSS, Shadcn UI
 - **Deployment:** Vercel (via GitHub integration)
 - **Features:** Modular component structure, custom hooks, Radix UI, Shadcn UI components, Framer Motion, and more.
+- **CMS:** Sanity – structured content management with Sanity Studio embedded directly into the app for a seamless editing experience
 
 ---
 
