@@ -396,7 +396,7 @@ export type AllSanitySchemaTypes = SanityImagePaletteSwatch | SanityImagePalette
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: ./src/sanity/lib/queries.ts
 // Variable: POSTS_QUERY
-// Query: *[_type == "post" && defined(slug.current)][0...3]{  _id, title, slug, mainImage, publishedAt, body}
+// Query: *[_type == "post" && defined(slug.current)] | order(publishedAt desc)[0...3]{  _id, title, slug, mainImage, publishedAt, body }
 export type POSTS_QUERYResult = Array<{
   _id: string;
   title: string | null;
@@ -629,7 +629,7 @@ export type EVENT_BY_SLUG_QUERYResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    "*[_type == \"post\" && defined(slug.current)][0...3]{\n  _id, title, slug, mainImage, publishedAt, body\n}": POSTS_QUERYResult;
+    "*[_type == \"post\" && defined(slug.current)] | order(publishedAt desc)[0...3]{\n  _id, title, slug, mainImage, publishedAt, body\n}": POSTS_QUERYResult;
     "*[_type == \"post\" && slug.current == $slug][0]{\n  title, body, mainImage\n}": POST_QUERYResult;
     "\n  *[_type == \"event\" && defined(slug.current) && defined(eventDateTime)] | order(eventDateTime desc)[0]{\n    _id,\n    title,\n    \"slug\": slug.current,\n    eventDateTime,\n    eventEndDateTime,\n    location,\n    description,\n    mainImage,\n    \"organizerName\": organizer,\n    \"timeDisplay\": timeDisplay \n  }\n": LATEST_EVENT_QUERYResult;
     "\n  *[_type == \"event\" && defined(slug.current)] | order(eventDateTime asc){\n    _id,\n    title,\n    \"slug\": slug.current,\n    eventDateTime,\n    eventEndDateTime,\n    location,\n    description,\n    mainImage,\n    \"organizerName\": organizer,\n    \"timeDisplay\": timeDisplay\n  }\n": ALL_EVENTS_QUERYResult;
