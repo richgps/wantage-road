@@ -1,12 +1,12 @@
 # Wantage Road
 
-A modern web application built with Next.js and TypeScript, styled with Tailwind CSS and Shadcn UI, and deployed via Vercel.
+A modern web application built with Next.js and TypeScript, styled with Tailwind CSS and Shadcn UI
 
 ---
 
 ## Overview
 
-This repository contains the source code for the Wantage Road community we
+This repository contains the source code for the Wantage Road community 
 
 - **Framework:** Next.js (TypeScript)
 - **Styling:** Tailwind CSS, Shadcn UI
@@ -18,10 +18,6 @@ This repository contains the source code for the Wantage Road community we
 ## Deployment
 
 Every commit to the `main` branch triggers an automatic deployment on Vercel via GitHub Actions or Vercel's Git integration.
-
-The app is live at:
-
-**[View Deployment on Vercel](https://v0-wantage-road-theta.vercel.app)**
 
 ---
 
