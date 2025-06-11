@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import React from 'react';
 import type { Metadata } from 'next';
+import { Analytics } from '@vercel/analytics/react';
 import "./globals.css";
 
 // Define metadata for the root layout
@@ -27,6 +28,7 @@ export default function RootLayout({
       {/* No need to manually add <head> or <link rel="icon"> here */}
       <body>
         {children}
+        <Analytics />
       </body>
     </html>
   );
