@@ -17,7 +17,12 @@ export const POST_QUERY = defineQuery(`*[_type == "post" && slug.current == $slu
 }`)
 
 export const LATEST_EVENT_QUERY = defineQuery(`
-  *[_type == "event" && defined(slug.current) && defined(eventDateTime)] | order(eventDateTime desc)[0]{
+  *[
+    _type == "event" &&
+    defined(slug.current) &&
+    defined(eventDateTime) &&
+    eventDateTime >= now()
+  ] | order(eventDateTime asc)[0]{
     _id,
     title,
     "slug": slug.current,

@@ -497,7 +497,7 @@ export type POST_QUERYResult = {
   } | null;
 } | null;
 // Variable: LATEST_EVENT_QUERY
-// Query: *[_type == "event" && defined(slug.current) && defined(eventDateTime)] | order(eventDateTime desc)[0]{    _id,    title,    "slug": slug.current,    eventDateTime,    eventEndDateTime,    location,    description,    mainImage,    "organizerName": organizer,    "timeDisplay": timeDisplay   }
+// Query: *[_type == "event" && defined(slug.current) && defined(eventDateTime) && eventDateTime >= now()] | order(eventDateTime asc)[0]{    _id,    title,    "slug": slug.current,    eventDateTime,    eventEndDateTime,    location,    description,    mainImage,    "organizerName": organizer,    "timeDisplay": timeDisplay   }
 export type LATEST_EVENT_QUERYResult = {
   _id: string;
   title: string | null;
@@ -631,7 +631,7 @@ declare module "@sanity/client" {
   interface SanityQueries {
     "*[_type == \"post\" && defined(slug.current)] | order(publishedAt desc)[0...3]{\n  _id, title, slug, mainImage, publishedAt, body\n}": POSTS_QUERYResult;
     "*[_type == \"post\" && slug.current == $slug][0]{\n  title, body, mainImage\n}": POST_QUERYResult;
-    "\n  *[_type == \"event\" && defined(slug.current) && defined(eventDateTime)] | order(eventDateTime desc)[0]{\n    _id,\n    title,\n    \"slug\": slug.current,\n    eventDateTime,\n    eventEndDateTime,\n    location,\n    description,\n    mainImage,\n    \"organizerName\": organizer,\n    \"timeDisplay\": timeDisplay \n  }\n": LATEST_EVENT_QUERYResult;
+    "\n  *[_type == \"event\" && defined(slug.current) && defined(eventDateTime) && eventDateTime >= now()] | order(eventDateTime asc)[0]{\n    _id,\n    title,\n    \"slug\": slug.current,\n    eventDateTime,\n    eventEndDateTime,\n    location,\n    description,\n    mainImage,\n    \"organizerName\": organizer,\n    \"timeDisplay\": timeDisplay \n  }\n": LATEST_EVENT_QUERYResult;
     "\n  *[_type == \"event\" && defined(slug.current)] | order(eventDateTime asc){\n    _id,\n    title,\n    \"slug\": slug.current,\n    eventDateTime,\n    eventEndDateTime,\n    location,\n    description,\n    mainImage,\n    \"organizerName\": organizer,\n    \"timeDisplay\": timeDisplay\n  }\n": ALL_EVENTS_QUERYResult;
     "\n  *[_type == \"event\" && slug.current == $slug][0]{\n    _id,\n    title,\n    \"slug\": slug.current, // Already stringified in event-card\n    eventDateTime,\n    eventEndDateTime,\n    timeDisplay,\n    location,\n    description, // Short description for cards\n    longDescription, // Detailed description\n    mainImage,\n    gallery,\n    features,\n    organizer,\n    contactEmail\n    // Add any other fields needed for the event details page\n  }\n": EVENT_BY_SLUG_QUERYResult;
   }
