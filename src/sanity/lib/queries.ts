@@ -21,7 +21,7 @@ export const LATEST_EVENT_QUERY = defineQuery(`
     _type == "event" &&
     defined(slug.current) &&
     defined(eventDateTime) &&
-    coalesce(eventEndDateTime, eventDateTime) >= now()
+    eventDateTime >= now()
   ] | order(eventDateTime asc)[0]{
     _id,
     title,
